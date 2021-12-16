@@ -1,0 +1,64 @@
+{
+ "creation": "2021-11-26 11:57:36.264252",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "wbs_id",
+  "wbs_active",
+  "wbs_name",
+  "colbrk",
+  "wbs_type",
+  "wbs_item"
+ ],
+ "fields": [
+  {
+   "fieldname": "colbrk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wbs_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "WBS ID"
+  },
+  {
+   "fieldname": "wbs_active",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "WBS Active",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "wbs_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "WBS Name"
+  },
+  {
+   "fieldname": "wbs_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "WBS Type",
+   "options": "\nSpecific Item\nAny Item"
+  },
+  {
+   "fieldname": "wbs_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WBS Item ",
+   "options": "Item"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-12-02 17:03:51.090637",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

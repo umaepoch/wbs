@@ -1,0 +1,120 @@
+{
+ "autoname": "warehouse.-.#####",
+ "creation": "2021-11-26 11:56:48.675383",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "warehouse",
+  "start_date",
+  "end_date",
+  "is_active",
+  "col_brk34",
+  "number_of_rooms",
+  "number_of_aisles_per_room",
+  "number_of_racks_per_aisle",
+  "number_of_bins_per_rack",
+  "secc_brk",
+  "make_wbs",
+  "amended_from",
+  "wbs"
+ ],
+ "fields": [
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "col_brk34",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_rooms",
+   "fieldtype": "Int",
+   "label": "Number of Rooms"
+  },
+  {
+   "fieldname": "number_of_aisles_per_room",
+   "fieldtype": "Int",
+   "label": "Number of Aisles per Room"
+  },
+  {
+   "fieldname": "number_of_racks_per_aisle",
+   "fieldtype": "Int",
+   "label": "Number of Racks per Aisle"
+  },
+  {
+   "fieldname": "number_of_bins_per_rack",
+   "fieldtype": "Int",
+   "label": "Number of Bins per Rack"
+  },
+  {
+   "fieldname": "secc_brk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "WBS Warehouse"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "make_wbs",
+   "fieldtype": "Button",
+   "label": "Make WBS"
+  },
+  {
+   "fieldname": "wbs",
+   "fieldtype": "Table",
+   "label": "WBS",
+   "options": "WBS Item"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2021-12-08 08:37:04.205159",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Warehouse",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
