@@ -2,7 +2,6 @@
 // For license information, please see license.txt
 
 
-
 frappe.ui.form.on("WBS Warehouse", "refresh", function(frm, cdt, cdn){
 	var doc = locals[cdt][cdn]
 	if (cur_frm.doc.__islocal){
@@ -29,8 +28,13 @@ frappe.ui.form.on("WBS Warehouse", "is_active", function(frm, cdt, cdn) {
 		today = yyyy+"-"+mm+"-"+dd
 			if (doc.start_date != today){
 				cur_frm.set_value("is_active", 0)
-				refresh_field("is_active")
-				frappe.throw(__("Start should be today for the WBS Warehouse to be active."))
+				if (doc.docstatus === 1) {
+					console.log(doc)
+					cur_frm.set_df_property('start_date','allow_on_submit', 1)
+					refresh_field('start_date')
+				}
+				refresh_field('is_active')
+				frappe.throw(__("Start date should be today for the WBS Warehouse to be active."))
 			}
 	}
 })
