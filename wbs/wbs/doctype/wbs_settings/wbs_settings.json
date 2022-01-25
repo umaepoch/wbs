@@ -1,0 +1,61 @@
+{
+ "autoname": "format:{warehouse}-{start_date}",
+ "creation": "2022-01-25 09:53:05.207815",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "warehouse",
+  "start_date",
+  "section_break_3",
+  "wbs_attributes"
+ ],
+ "fields": [
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "wbs_attributes",
+   "fieldtype": "Table",
+   "label": "WBS Attributes ",
+   "options": "WBS Attributes"
+  }
+ ],
+ "modified": "2022-01-25 10:43:58.008844",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

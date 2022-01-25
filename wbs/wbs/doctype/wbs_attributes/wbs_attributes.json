@@ -1,0 +1,49 @@
+{
+ "creation": "2022-01-25 09:59:05.935312",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "attribute_level",
+  "attribute_name",
+  "column_break_3",
+  "refer_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "attribute_level",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Attribute Level"
+  },
+  {
+   "fieldname": "attribute_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Attribute Name",
+   "options": "Attribute Name"
+  },
+  {
+   "fieldname": "refer_by",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Refer to Attribute by: (Name/ID)",
+   "options": "Name\nID"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-01-25 10:08:57.690601",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Attributes",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

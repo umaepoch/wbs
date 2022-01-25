@@ -1,0 +1,41 @@
+{
+ "creation": "2022-01-25 11:15:53.253106",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "column_break_2",
+  "qty_in_shelf"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "qty_in_shelf",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty in Shelf"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-01-25 11:27:12.271544",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Stored Items",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

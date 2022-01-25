@@ -48,7 +48,7 @@ frappe.ui.form.on("Stock Entry", {
               frappe.throw(__(`${detail.doctype} : ${detail.name} at row ${detail.idx} source warehouse ${detail.s_warehouse} is not an active WBS Warehouse`))
               frappe.validated = false;
             }
-            let qty = check_available_qty(detail.s_warehouse, detail.qty)
+            // let qty = check_available_qty(detail.s_warehouse, detail.qty)
           })
         }
       }
@@ -57,10 +57,11 @@ frappe.ui.form.on("Stock Entry", {
 });
 
 function check_available_qty(s_warehouse, qty) {
-  let qty;
+  // let qty;
   // frappe.call({
   // });
 }
+
 // frappe.ui.form.on("Stock Entry Detail", {
 //   s_warehouse: (frm) => {
 //

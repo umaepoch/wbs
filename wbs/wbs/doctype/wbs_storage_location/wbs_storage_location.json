@@ -1,0 +1,130 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2022-01-25 11:08:11.456885",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "wbs_settings_id",
+  "is_group",
+  "column_break_4",
+  "rarb_warehouse",
+  "section_break_3",
+  "attribute_level",
+  "parent_attribute",
+  "column_break_5",
+  "attribute_name",
+  "attribute_record_by_idname",
+  "item_details_section",
+  "storage_location_can_store",
+  "stored_items_section",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "wbs_settings_id",
+   "fieldtype": "Link",
+   "label": "WBS Settings ID",
+   "options": "WBS Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "attribute_level",
+   "fieldtype": "Data",
+   "label": "Attribute Level"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attribute_name",
+   "fieldtype": "Link",
+   "label": "Attribute Name",
+   "options": "Attribute Name"
+  },
+  {
+   "fieldname": "parent_attribute",
+   "fieldtype": "Data",
+   "label": "Parent Attribute"
+  },
+  {
+   "fieldname": "attribute_record_by_idname",
+   "fieldtype": "Select",
+   "label": "Attribute Record by ID/Name",
+   "options": "Name\nID"
+  },
+  {
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fieldname": "storage_location_can_store",
+   "fieldtype": "Select",
+   "label": "Storage Location can store",
+   "options": "Specific Items\nAny Items"
+  },
+  {
+   "fieldname": "stored_items_section",
+   "fieldtype": "Section Break",
+   "label": "Stored Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "WBS Stored Items"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "WBS-STGE-"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rarb_warehouse",
+   "fieldtype": "Link",
+   "label": "RARB Warehouse",
+   "options": "Warehouse",
+   "read_only": 1
+  }
+ ],
+ "modified": "2022-01-25 16:36:33.850074",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Storage Location",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
