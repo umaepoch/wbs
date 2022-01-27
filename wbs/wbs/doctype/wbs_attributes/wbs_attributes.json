@@ -28,7 +28,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Refer to Attribute by: (Name/ID)",
-   "options": "Name\nID"
+   "options": "ID\nName"
   },
   {
    "fieldname": "column_break_3",
@@ -36,7 +36,7 @@
   }
  ],
  "istable": 1,
- "modified": "2022-01-25 10:08:57.690601",
+ "modified": "2022-01-27 10:28:54.602065",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Attributes",

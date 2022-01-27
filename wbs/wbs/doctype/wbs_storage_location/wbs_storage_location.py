@@ -19,3 +19,14 @@ def get_attributes(id):
 		return {"SC": True, 'attrs': atr_list}
 	except Exception as ex:
 		return {"EX": ex}
+
+
+@frappe.whitelist()
+def get_attribute_name(id, lv):
+	try:
+		name = frappe.db.sql("""select attribute_name from `tabWBS Attributes`
+							where parent=%s and attribute_level=%s""", (id, lv), as_dict = 1);
+
+		return {'name': name[0].attribute_name}
+	except Exception as ex:
+		return {"EX" : ex}

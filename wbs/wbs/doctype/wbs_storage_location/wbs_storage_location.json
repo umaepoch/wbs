@@ -15,7 +15,11 @@
   "parent_attribute",
   "column_break_5",
   "attribute_name",
+  "section_break_11",
   "attribute_record_by_idname",
+  "attribute_id",
+  "column_break_14",
+  "attribute",
   "item_details_section",
   "storage_location_can_store",
   "stored_items_section",
@@ -25,8 +29,10 @@
   {
    "fieldname": "wbs_settings_id",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "WBS Settings ID",
-   "options": "WBS Settings"
+   "options": "WBS Settings",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -37,11 +43,6 @@
   {
    "fieldname": "section_break_3",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "attribute_level",
-   "fieldtype": "Data",
-   "label": "Attribute Level"
   },
   {
    "fieldname": "column_break_5",
@@ -56,13 +57,14 @@
   {
    "fieldname": "parent_attribute",
    "fieldtype": "Data",
-   "label": "Parent Attribute"
+   "label": "Parent Attribute",
+   "read_only": 1
   },
   {
    "fieldname": "attribute_record_by_idname",
    "fieldtype": "Select",
    "label": "Attribute Record by ID/Name",
-   "options": "Name\nID"
+   "options": "ID\nName"
   },
   {
    "fieldname": "item_details_section",
@@ -102,9 +104,34 @@
    "label": "RARB Warehouse",
    "options": "Warehouse",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break",
+   "label": "Attributes Records"
+  },
+  {
+   "fieldname": "attribute_id",
+   "fieldtype": "Data",
+   "label": "Attribute ID"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attribute",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Attribute Name"
+  },
+  {
+   "fieldname": "attribute_level",
+   "fieldtype": "Select",
+   "label": "Attribute Level"
   }
  ],
- "modified": "2022-01-25 16:36:33.850074",
+ "modified": "2022-01-27 12:58:10.522855",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Storage Location",
@@ -123,7 +150,6 @@
    "write": 1
   }
  ],
- "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1
