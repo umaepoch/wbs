@@ -93,13 +93,19 @@ frappe.ui.form.on('WBS Storage Location', {
 				frm.set_value('parent_attribute', `Level ${frm.doc.attribute_level} Attribute`);
 				frm.refresh_field('parent_attribute');
 				frm.trigger('set_name');
+				let refer_by = get_refer_by(frm.doc.wbs_settings_id)
+
+				if (refer_by) {
+					frm.set_value('attribute_record_by_idname', refer_by.refer_by ? refer_by.refer_by : '');
+					frm.refresh_field('attribute_record_by_idname');
+				}
 			}
 
 			if (parseInt(frm.doc.attribute_level) > 1) {
-				frm.trigger('set_parent_lvl');
 				frm.set_value('parent_attribute', '');
 				frm.refresh_field('parent_attribute');
 				frm.trigger('set_name');
+				frm.trigger('set_parent_lvl');
 			}
 
 		} else {
@@ -171,13 +177,32 @@ function get_parent_lvl_by_id_name(ID, lvl) {
 				parent_lvl = r.message;
 			}
 			if (r.message.EX) {
-				frappe.throw(__(ex))
+				frappe.throw(__(r.message.EX))
 			}
 		}
 	});
 	return parent_lvl
 }
 
+function get_refer_by(ID) {
+	let refer;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.get_refer_by',
+		args: {
+			'id': ID
+		},
+		async: false,
+		callback: (r) => {
+			if (r.message) {
+				refer = r.message;
+			}
+			if (r.message.EX) {
+				frappe.throw(__(r.message.EX))
+			}
+		}
+	});
+	return refer
+}
 
 // API to get Warehouse flagged as RARB from WBS Settings.
 // @param ID.
