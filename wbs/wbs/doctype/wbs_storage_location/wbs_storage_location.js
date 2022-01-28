@@ -22,11 +22,7 @@ frappe.ui.form.on('WBS Storage Location', {
       }
 
 			// Hide Field Attribute Name if not name.
-			if (frm.doc.attribute_record_by_idname === 'Name') {
-				frm.set_df_property('attribute', 'hidden', false);
-			} else {
-				frm.set_df_property('attribute', 'hidden', true);
-			}
+			frm.trigger('set_refer_by');
 
 			// Display List options attribute_level.
 			if (frm.doc.wbs_settings_id) {
@@ -70,6 +66,7 @@ frappe.ui.form.on('WBS Storage Location', {
       }
 
 			frm.trigger('set_level');
+			frm.trigger('set_refer_by')
 
 		} else {
 			frm.set_df_property('attribute_level', 'options', []);
@@ -78,12 +75,7 @@ frappe.ui.form.on('WBS Storage Location', {
 
   },
 	attribute_record_by_idname: (frm) => {
-
-		if (frm.doc.attribute_record_by_idname === 'Name') {
-			frm.set_df_property('attribute', 'hidden', false);
-		} else {
-			frm.set_df_property('attribute', 'hidden', true);
-		}
+			frm.trigger('set_refer_by');
 	},
 	storage_location_can_store: (frm) => {
 
@@ -104,6 +96,7 @@ frappe.ui.form.on('WBS Storage Location', {
 			}
 
 			if (parseInt(frm.doc.attribute_level) > 1) {
+				frm.trigger('set_parent_lvl');
 				frm.set_value('parent_attribute', '');
 				frm.refresh_field('parent_attribute');
 				frm.trigger('set_name');
@@ -138,8 +131,52 @@ frappe.ui.form.on('WBS Storage Location', {
 			frm.set_value('attribute_name', atr_name);
 			frm.refresh_field('attribute_name');
 		}
+	},
+	set_parent_lvl: (frm) => {
+
+		// let lvl = frm.doc.attribute_level - 1;
+		let parent_lvl = get_parent_lvl_by_id_name(frm.doc.wbs_settings_id, frm.doc.attribute_level);
+
+		if (parent_lvl) {
+			frm.set_value('parent_attribute', parent_lvl.parent ? parent_lvl.parent : '');
+			frm.refresh_field('parent_attribute');
+			frm.set_value('attribute_record_by_idname', parent_lvl.refer_by ? parent_lvl.refer_by : '');
+			frm.refresh_field('attribute_record_by_idname');
+		}
+	},
+	set_refer_by: (frm) => {
+
+		if (frm.doc.attribute_record_by_idname === 'Name') {
+			frm.set_df_property('attribute', 'hidden', false);
+		} else {
+			frm.set_df_property('attribute', 'hidden', true);
+		}
 	}
 });
+
+// API to fetch parent level.
+// @param ID, LEVEL.
+// @return PARENT, REFER BY.
+function get_parent_lvl_by_id_name(ID, lvl) {
+	let parent_lvl;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.get_parent_lvl_by_id_name',
+		args: {
+			'id': ID,
+			'level': lvl
+		},
+		async: false,
+		callback: (r) => {
+			if (r.message) {
+				parent_lvl = r.message;
+			}
+			if (r.message.EX) {
+				frappe.throw(__(ex))
+			}
+		}
+	});
+	return parent_lvl
+}
 
 
 // API to get Warehouse flagged as RARB from WBS Settings.

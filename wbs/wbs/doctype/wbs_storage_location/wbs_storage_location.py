@@ -12,10 +12,9 @@ class WBSStorageLocation(Document):
 @frappe.whitelist()
 def get_attributes(id):
 	try:
-		print("WBS Settings", id)
 		atr_list = frappe.db.sql("""select attribute_level, attribute_name from `tabWBS Attributes`
 								where parent=%s""", (id), as_dict=1)
-		print(atr_list);
+
 		return {"SC": True, 'attrs': atr_list}
 	except Exception as ex:
 		return {"EX": ex}
@@ -30,3 +29,18 @@ def get_attribute_name(id, lv):
 		return {'name': name[0].attribute_name}
 	except Exception as ex:
 		return {"EX" : ex}
+
+
+@frappe.whitelist()
+def get_parent_lvl_by_id_name(id, level):
+	try:
+		check_for_level = int(level) - 1
+		parent = frappe.db.sql("""select tsl.attribute, ta.refer_by from `tabWBS Storage Location` as tsl
+								join `tabWBS Attributes` as ta on tsl.wbs_settings_id = ta.parent
+								where tsl.wbs_settings_id = %s and ta.attribute_level = %s and tsl.attribute_level = %s""",(id, level, str(check_for_level)), as_dict=1);
+
+		if parent and len(parent) > 0:
+			return {'parent': parent[len(parent) - 1].attribute, 'refer_by': parent[len(parent) - 1].refer_by}
+		return False
+	except Exception as ex:
+		return {'EX': ex}

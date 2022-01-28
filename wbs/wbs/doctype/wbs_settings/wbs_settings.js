@@ -14,6 +14,8 @@ frappe.ui.form.on('WBS Settings', {
 
           if ((present_date.getDate() - selected_date.getDate()) > 0) {
             frappe.throw(__('Please select a future date.'))
+          } else if ((present_date.getDate() - selected_date.getDate()) === 0) {
+            frappe.throw(__('Please select a future date.'))
           }
 
         } else if (((present_date.getMonth()+1) - (selected_date.getMonth()+1)) < 0) {
