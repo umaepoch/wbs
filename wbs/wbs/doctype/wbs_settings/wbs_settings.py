@@ -14,7 +14,9 @@ class WBSSettings(Document):
 def get_doc_url():
 	try:
 		doc = frappe.new_doc('WBS Settings')
+		print(doc)
 		url = doc.get_url()
+		print(url)
 		return {'url': url}
 	except Exception as ex:
 		return {'EX': ex}
