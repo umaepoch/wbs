@@ -9,3 +9,12 @@ import datetime
 
 class WBSSettings(Document):
 	pass
+
+@frappe.whitelist()
+def get_doc_url():
+	try:
+		doc = frappe.new_doc('WBS Settings')
+		url = doc.get_url()
+		return {'url': url}
+	except Exception as ex:
+		return {'EX': ex}
