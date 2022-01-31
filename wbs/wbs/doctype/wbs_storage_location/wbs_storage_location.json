@@ -56,7 +56,7 @@
   },
   {
    "fieldname": "parent_attribute",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "label": "Parent Attribute",
    "read_only": 1
   },
@@ -131,7 +131,7 @@
    "label": "Attribute Level"
   }
  ],
- "modified": "2022-01-28 10:29:55.203047",
+ "modified": "2022-01-28 19:23:54.364684",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Storage Location",
