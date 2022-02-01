@@ -105,3 +105,36 @@ def generate_ids(id, parent_attribute):
 	except Exception as ex:
 
 		return {'EX':ex}
+
+
+
+@frappe.whitelist()
+def generate_records_of_name(id, lvl, atr_name):
+	try:
+		list = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location`
+							where wbs_settings_id = %s and attribute_level = %s and attribute=%s""",
+							(id, lvl, atr_name), as_dict = 1);
+		print(list)
+		if list and len(list) > 0:
+			if list[len(list) - 1].name_of_attribute_id:
+				return {'Name': list[len(list) - 1].name_of_attribute_id}
+		return False
+	except Exception as ex:
+
+		return {'EX': ex}
+
+
+@frappe.whitelist()
+def generate_records_of_id(id, lvl, atr_id):
+	try:
+		list = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location`
+							where wbs_settings_id = %s and attribute_level = %s and attribute_id = %s""",
+							(id, lvl, atr_id), as_dict = 1);
+		print(list)
+		if list and len(list) > 0:
+			if list[len(list) - 1].name_of_attribute_id:
+				return {'ID': list[len(list) - 1].name_of_attribute_id}
+		return False
+	except Exception as ex:
+
+		return {'EX': ex}

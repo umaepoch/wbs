@@ -239,6 +239,47 @@ frappe.ui.form.on('WBS Storage Location', {
 			}
 		}
 	},
+	before_save: (frm) => {
+
+		if (parseInt(frm.doc.attribute_level) === 1) {
+
+			if (frm.doc.attribute_record_by_idname === 'Name') {
+				frm.set_value('name_of_attribute_id', frm.doc.attribute ? frm.doc.attribute : '');
+				frm.refresh_field('name_of_attribute_id');
+			} else if (frm.doc.attribute_record_by_idname === 'ID') {
+				frm.set_value('name_of_attribute_id', frm.doc.attribute_id ? frm.doc.attribute_id : '');
+				frm.refresh_field('name_of_attribute_id');
+			}
+		}
+
+		if (parseInt(frm.doc.attribute_level)  > 1) {
+			let name = frm.doc.attribute ? frm.doc.attribute : '';
+			let level = frm.doc.attribute_level - 1;
+			let attribute_idname;
+			let parent_recordby = get_refer_by2(frm.doc.wbs_settings_id, level);
+			let name_of_attr_id;
+
+			if (parent_recordby.refer_by === 'Name') {
+				attribute_idname = frm.doc.parent_attribute.split('-')[frm.doc.parent_attribute.split('-').length - 1].trim();
+				name_of_attr_id = generate_records_of_name(frm.doc.wbs_settings_id, level, attribute_idname);
+
+			} else if (parent_recordby.refer_by === 'ID') {
+				attribute_idname = frm.doc.parent_attribute
+				name_of_attr_id = generate_records_of_id(frm.doc.wbs_settings_id, level, attribute_idname)
+			}
+
+			if (name_of_attr_id) {
+
+				if (frm.doc.attribute_record_by_idname === 'Name' && name) {
+					frm.set_value('name_of_attribute_id', name_of_attr_id+'-'+name);
+					frm.refresh_field('name_of_attribute_id');
+				} else if (frm.doc.attribute_record_by_idname === 'ID' && level >= 0) {
+					frm.set_value('name_of_attribute_id',name_of_attr_id+'-'+frm.doc.attribute_id.split('-')[level]);
+					frm.refresh_field('name_of_attribute_id');
+				}
+			}
+		}
+	},
 	after_save: (frm) => {
 
 		if (!frm.doc.__islocal && frm.doc.name) {
@@ -257,6 +298,52 @@ frappe.ui.form.on('WBS Storage Location', {
 		}
 	}
 });
+
+function generate_records_of_id(ID, lvl, atr_id) {
+	let rec_id;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.generate_records_of_id',
+		args: {
+			'id': ID,
+			'lvl': lvl,
+			'atr_id': atr_id
+		},
+		async: false,
+		callback: (r) => {
+			if (r.message) {
+				rec_id = r.message.ID ? r.message.ID : '';
+			}
+
+			if (r.message.EX) {
+				frappe.throw(__(r.message.EX))
+			}
+		}
+	});
+	return rec_id
+}
+
+function generate_records_of_name(ID, lvl, atr_name) {
+	let rec_name;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.generate_records_of_name',
+		args: {
+			'id': ID,
+			'lvl': lvl,
+			'atr_name': atr_name
+		},
+		async: false,
+		callback: (r) => {
+			if (r.message) {
+				rec_name = r.message.Name ? r.message.Name : '';
+			}
+
+			if (r.message.EX) {
+				frappe.throw(_(r.message.EX))
+			}
+		}
+	});
+	return rec_name
+}
 
 // API to generate ID for level 1 attribute.
 // @param ID, PARENT ATTRIBUTE.
