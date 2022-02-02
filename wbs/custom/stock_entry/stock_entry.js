@@ -5,7 +5,7 @@ let purpose;
 
 // display link fields based on warehouse.
 frappe.ui.form.on("Stock Entry", {
-  refresh: (frm, cdt, cdn) => {
+  purpose: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn]
     console.log(doc)
     console.log(frm.doc.purpose==='Material Transfer')
