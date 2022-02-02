@@ -39,7 +39,6 @@ frappe.ui.form.on("Stock Entry Detail", {
     }
   },
   t_warehouse: (frm, cdt, cdn) => {
-    var df=frappe.meta.get_docfield('Stock Entry Detail', 'target_warehouse_storage_location',frm.doc.name);
 
     console.log('Event t_warehouse')
     if (frm.doc.stock_entry_type === 'Material Transfer') {
@@ -50,16 +49,14 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         if (t_wbs) {
           console.log('hidden')
-          df.hidden = 0;
-          // cur_frm.fields_dict.items.grid.toggle_display("target_warehouse_storage_location", true);
           console.log('show t_warehouse')
-          frm.fields_dict.items.grid.set_column_disp("target_warehouse_storage_location",1);
+          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], true);
+          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], 1);
         } else {
           console.log('show')
-          df.hidden = 1;
-          // cur_frm.fields_dict.items.grid.toggle_display("target_warehouse_storage_location", false);
           console.log('hide t_warehouse')
-          frm.fields_dict.items.grid.set_column_disp("target_warehouse_storage_location",0);
+          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], false);
+          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], 0);
         }
       }
     }
