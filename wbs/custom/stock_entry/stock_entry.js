@@ -39,6 +39,8 @@ frappe.ui.form.on("Stock Entry Detail", {
     }
   },
   t_warehouse: (frm, cdt, cdn) => {
+    var df=frappe.meta.get_docfield('Stock Entry Detail', 'target_warehouse_storage_location',frm.doc.name);
+
     console.log('Event t_warehouse')
     if (frm.doc.stock_entry_type === 'Material Transfer') {
       let doc = locals[cdt][cdn]
@@ -47,9 +49,15 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
+          console.log('hidden')
+          df.hidden=0;
+          frm.refresh_fields();
           console.log('show s_warehouse')
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
+          console.log('show')
+          df.hidden=1;
+          frm.refresh_fields();
           console.log('hide s_warehouse')
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
         }
