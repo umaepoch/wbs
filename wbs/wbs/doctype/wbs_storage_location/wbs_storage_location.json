@@ -138,7 +138,7 @@
    "read_only": 1
   }
  ],
- "modified": "2022-02-01 09:36:12.347431",
+ "modified": "2022-02-02 09:13:04.134702",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Storage Location",
@@ -159,5 +159,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "title_field": "name_of_attribute_id",
  "track_changes": 1
 }
