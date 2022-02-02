@@ -138,3 +138,18 @@ def generate_records_of_id(id, lvl, atr_id):
 	except Exception as ex:
 
 		return {'EX': ex}
+
+@frappe.whitelist()
+def get_specific_items(location):
+	try:
+		list = frappe.db.sql("""select twsi.item_code from `tabWBS Stored Items` as twsi
+							join `tabWBS Storage Location` as twsl on twsl.name = twsi.parent
+							where twsl.is_group='0' and twsl.storage_location_can_store = 'Specific Items' and twsi.parent = %s""",
+							location, as_dict=1);
+
+		print(list)
+		if list and len(list) > 0:
+			return {'list': list}
+		return False
+	except Exception as ex:
+		return {'EX': ex}

@@ -33,3 +33,16 @@ def get_nearest_settings_id(transaction_date, warehouse):
 		return False
 	except Exception as ex:
 		return {"EX": ex}
+
+@frappe.whitelist()
+def is_wbs(warehouse):
+	try:
+		list = frappe.db.sql("""select is_wbs_active from `tabWarehouse` where name = %s""", warehouse, as_dict = 1)
+
+		print(list)
+		if list and len(list) > 0 and len(list) == 1:
+			if list[len(list) - 1].is_wbs_active == 1:
+				return {'is_wbs_active':True}
+		return False
+	except Exception as ex:
+		return {'EX': ex}
