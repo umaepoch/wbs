@@ -9,7 +9,8 @@ frappe.ui.form.on("Stock Entry", {
     let doc = locals[cdt][cdn]
     console.log(doc)
     console.log(frm.doc.purpose==='Material Transfer')
-    this.frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location", frm.doc.purpose ==='Material Transfer');
+    frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location", frm.doc.purpose !=='Material Transfer');
+    frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location", frm.doc.purpose ==='Material Transfer');
   }
 });
 
