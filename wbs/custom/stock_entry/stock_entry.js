@@ -6,80 +6,10 @@ let purpose;
 // display link fields based on warehouse.
 frappe.ui.form.on("Stock Entry Detail", {
   form_render: (frm, cdt, cdn) => {
-    let doc = locals[cdt][cdn];
-    if (doc.s_warehouse) {
-      console.log('Event form render')
-      let s_wbs = is_wbs(doc.s_warehouse)
-
-      if (s_wbs) {
-        console.log('show s_warehouse')
-        frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
-      } else {
-        console.log('hide s_warehouse')
-        frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
-      }
-    } else {
-      console.log('hide s_warehouse not selected')
-      frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
-    }
-
-    if (doc.t_warehouse) {
-      let t_wbs = is_wbs(doc.t_warehouse)
-
-      if (t_wbs) {
-        console.log('show s_warehouse')
-        frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
-      } else {
-        console.log('hide t_warehouse')
-        frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
-      }
-    } else {
-      console.log('hide t_warehouse not selected')
-      frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
-    }
-  },
-  t_warehouse: (frm, cdt, cdn) => {
-
-    console.log('Event t_warehouse')
-    if (frm.doc.stock_entry_type === 'Material Transfer') {
-      let doc = locals[cdt][cdn]
-      console.log('Material Transfer')
-      if (doc.t_warehouse) {
-        let t_wbs = is_wbs(doc.t_warehouse)
-
-        if (t_wbs) {
-          console.log('hidden')
-          console.log('show t_warehouse')
-          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], true);
-          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], 1);
-        } else {
-          console.log('show')
-          console.log('hide t_warehouse')
-          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], false);
-          frm.fields_dict["items"].grid.set_column_disp(["target_warehouse_storage_location"], 0);
-        }
-      }
-    }
-  },
-  s_warehouse: (frm, cdt, cdn) => {
-    console.log('Event s_warehouse')
-    if (frm.doc.stock_entry_type === 'Material Transfer') {
-      let doc = locals[cdt][cdn]
-      console.log('Material Transfer')
-      if (doc.s_warehouse) {
-        let s_wbs = is_wbs(doc.s_warehouse)
-
-        if (s_wbs) {
-          console.log('show s_warehouse')
-          // cur_frm.fields_dict.items.grid.toggle_display("source_warehouse_storage_location", true);
-          frm.fields_dict.items.grid.set_column_disp("source_warehouse_storage_location",1);
-        } else {
-          console.log('hide s_warehouse')
-          // cur_frm.fields_dict.items.grid.toggle_display("source_warehouse_storage_location", false);
-          frm.fields_dict.items.grid.set_column_disp("source_warehouse_storage_location",0);
-        }
-      }
-    }
+    let doc = locals[cdt][cdn]
+    console.log(doc)
+    console.log(frm.doc.purpose==='Material Transfer')
+    this.frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location", frm.doc.purpose ==='Material Transfer');
   }
 });
 
@@ -136,18 +66,6 @@ frappe.ui.form.on('Stock Entry', {
     }
   }
 });
-
-
-function get_latest_wbs(warehouse) {
-  let settings;
-  // frappe.call({
-  //   method: 'frappe.client.get_value',
-  //   args: {
-  //     'doctype': 'WBS Settings',
-  //     'filters': {'start_date'}
-  //   }
-  // });
-}
 
 function get_value(s_warehouse) {
   let flag;
