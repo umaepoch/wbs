@@ -4,8 +4,8 @@
 let purpose;
 
 // display link fields based on warehouse.
-frappe.ui.form.on("Stock Entry Detail", {
-  form_render: (frm, cdt, cdn) => {
+frappe.ui.form.on("Stock Entry", {
+  refresh: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn]
     console.log(doc)
     console.log(frm.doc.purpose==='Material Transfer')
@@ -66,6 +66,18 @@ frappe.ui.form.on('Stock Entry', {
     }
   }
 });
+
+
+function get_latest_wbs(warehouse) {
+  let settings;
+  // frappe.call({
+  //   method: 'frappe.client.get_value',
+  //   args: {
+  //     'doctype': 'WBS Settings',
+  //     'filters': {'start_date'}
+  //   }
+  // });
+}
 
 function get_value(s_warehouse) {
   let flag;
