@@ -75,6 +75,7 @@ frappe.ui.form.on("Stock Entry Detail", {
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
         }
       }
+
     }
   },
   item_code: (frm, cdt, cdn) => {

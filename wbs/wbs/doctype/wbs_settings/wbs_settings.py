@@ -103,7 +103,7 @@ def check_stock_ledger_entry_for_transactions(doc):
 							else:
 								return False
 					else:
-						return False
+						return {'Error': 'quantity not available in source warehouse storage location {0} at row : {1}'.format(strg_loc,i.get('idx'))}
 
 		# elif stock_entry.get('Material Receipt') == 'Material Receipt':
 		# 	posting_date = stock_entry.get('posting_date')
