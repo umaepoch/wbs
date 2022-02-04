@@ -51,6 +51,13 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         if (t_wbs) {
           console.log('show')
+
+          let t_strg_loc = get_nearest_settings_id(frm.doc.posting_date, doc.t_warehouse)
+
+          if (t_strg_loc.length === 1) {
+              doc.target_warehouse_storage_location = t_strg_loc[t_strg_loc.length - 1]
+              cur_frm.refresh_field('target_warehouse_storage_location')
+          }
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
           console.log('hide')
@@ -69,6 +76,13 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         if (s_wbs) {
           console.log('show')
+
+          let s_strg_loc = get_nearest_settings_id(frm.doc.posting_date, doc.s_warehouse)
+
+          if (s_strg_loc.length === 1) {
+            doc.source_warehouse_storage_location = s_strg_loc[s_strg_loc.length - 1]
+            cur_frm.refresh_field('source_warehouse_storage_location')
+          }
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
           console.log('hide')
@@ -79,6 +93,26 @@ frappe.ui.form.on("Stock Entry Detail", {
   }
 });
 
+function check_default_location(loc) {
+  let location;
+  frappe.call({
+    method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.check_default_location',
+    args: {
+      'loc': loc
+    },
+    async: false,
+    callback: (r) => {
+      if (r.message.location) {
+        location = r.message.location
+      } else if (r.message.EX) {
+        frappe.throw(__(r.message.EX))
+      } else {
+        location = false
+      }
+    }
+  });
+  return location
+}
 
 function is_wbs(warehouse) {
   let flag;
@@ -159,6 +193,12 @@ frappe.ui.form.on('Stock Entry', {
                   ['name', 'in', settings_id]
                 ]
               }
+            } else {
+              return {
+                filters:[
+                  ['rarb_warehouse', '=', child['s_warehouse']]
+                ]
+              }
             }
           }
         } else if (child['s_warehouse']) {
@@ -171,7 +211,13 @@ frappe.ui.form.on('Stock Entry', {
               return {
                 filters:[
                   ['rarb_warehouse', '=', child['s_warehouse']],
-                  ['wbs_settings_id', 'in', settings_id]
+                  ['name', 'in', settings_id]
+                ]
+              }
+            } else {
+              return {
+                filters:[
+                  ['rarb_warehouse', '=', child['s_warehouse']]
                 ]
               }
             }
@@ -191,7 +237,7 @@ frappe.ui.form.on('Stock Entry', {
     frm.fields_dict["items"].grid.get_field("target_warehouse_storage_location").get_query = function(doc, cdt, cdn) {
       var child = locals[cdt][cdn];
 
-      if (doc.purpose === 'Material Receipt') {
+      if (doc.purpose === 'Material Receipt' || doc.purpose === 'Material Transfer') {
 
         if (child['t_warehouse'] && child['item_code']) {
           let t_wbs = is_wbs(child['t_warehouse'])
@@ -202,8 +248,14 @@ frappe.ui.form.on('Stock Entry', {
             if (settings_id.length > 0) {
               return {
                 filters:[
-                  ['rarb_warehouse', '=', child['s_warehouse']],
+                  ['rarb_warehouse', '=', child['t_warehouse']],
                   ['name', 'in', settings_id]
+                ]
+              }
+            } else {
+              return {
+                filters:[
+                  ['rarb_warehouse', '=', child['t_warehouse']]
                 ]
               }
             }
@@ -218,7 +270,13 @@ frappe.ui.form.on('Stock Entry', {
               return {
                 filters:[
                   ['rarb_warehouse', '=', child['t_warehouse']],
-                  ['wbs_settings_id', 'in', settings_id]
+                  ['name', 'in', settings_id]
+                ]
+              }
+            } else {
+              return {
+                filters:[
+                  ['rarb_warehouse', '=', child['t_warehouse']]
                 ]
               }
             }
@@ -237,8 +295,42 @@ frappe.ui.form.on('Stock Entry', {
     let doc = locals[cdt][cdn];
     let child = doc.items
     validate_child(child, doc.purpose);
+
+    let flag = check_stock_ledger_entry_for_transactions(JSON.stringify(doc))
+
+    if (flag) {
+        frappe.throw(__(flag))
+        frappe.validated = false;
+    }
+  },
+  after_save: (frm, cdt, cdn) => {
+
+    if (frm.doc.docstatus === 1) {
+      console.log(frm.doc.docstatus)
+    }
   }
 });
+
+
+function check_stock_ledger_entry_for_transactions(doc) {
+  let exc;
+  frappe.call({
+    method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.check_stock_ledger_entry_for_transactions',
+    args: {
+      'doc': doc
+    },
+    async: false,
+    freeze: true,
+    callback: (r) => {
+      if (r.message.Error) {
+        exc = r.message.Error
+      } else if (r.message.EX) {
+        frappe.throw(__(r.message.EX))
+      }
+    }
+  });
+  return exc
+}
 
 function get_relative_settings(date, warehouse, item_code) {
   let list = [];
@@ -319,28 +411,32 @@ function get_nearest_settings_id(trans_date, warehouse) {
 function validate_child(child, purpose) {
 
   child.forEach(c => {
-    console.log(c)
-    if (c.s_warehouse) {
-      let s_wbs = is_wbs(c.s_warehouse)
+    if (purpose === 'Material Issue' || purpose === 'Material Transfer') {
 
-      if (s_wbs) {
-        if (!c.source_warehouse_storage_location) {
-          frappe.throw(__(`Please select Source Warehouse Storage Location for WBS Warehouse ${c.s_warehouse} at row : ${c.idx} in Stock Entry Detail Items`))
-        }
+      if (c.s_warehouse) {
+        let s_wbs = is_wbs(c.s_warehouse)
 
-        if (purpose === 'Material Transfer' && c.source_warehouse_storage_location && c.item_code) {
-          console.log('validate for item quantity for warehouse does exist')
+        if (s_wbs) {
+          if (!c.source_warehouse_storage_location) {
+            frappe.throw(__(`Source Warehouse Storage Location is mandatory for Stock Entry Type : ${purpose}, Please select Target Storage location at row : ${c.idx}`))
+            frappe.validate = false;
+          }
+
         }
       }
     }
 
-    if (c.t_warehouse) {
-      let t_wbs = is_wbs(c.t_warehouse)
+    if (purpose === 'Material Receipt' || purpose === 'Material Transfer') {
 
-      if (t_wbs) {
+      if (c.t_warehouse) {
+        let t_wbs = is_wbs(c.t_warehouse)
 
-        if (!c.target_warehouse_storage_location) {
-          frappe.throw(__(`Please select Target Warehouse Storage Location for WBS Warehouse ${c.t_warehouse} at row : ${c.idx} in Stock Entry Detail Items`))
+        if (t_wbs) {
+
+          if (!c.target_warehouse_storage_location) {
+            frappe.throw(__(`Target Warehouse Storage Location is mandatory for Stock Entry Type : ${purpose}, Please select Target Storage location at row : ${c.idx}`));
+            frappe.validated = false;
+          }
         }
       }
     }

@@ -153,3 +153,15 @@ def get_specific_items(location):
 		return False
 	except Exception as ex:
 		return {'EX': ex}
+
+@frappe.whitelist()
+def check_default_location(loc):
+	try:
+		list = frappe.db.sql("""select name from `tabWBS Storage Location`
+							where wbs_settings_id = %s and attribute_level = 4""",loc, as_dict = 1);
+
+		if list and len(list) == 1:
+			return {'location': list[len(list) - 1].name}
+		return False
+	except Exception as ex:
+		return {'EX': ex}
