@@ -51,13 +51,6 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         if (t_wbs) {
           console.log('show')
-
-          let t_strg_loc = get_nearest_settings_id(frm.doc.posting_date, doc.t_warehouse)
-
-          if (t_strg_loc.length === 1) {
-              doc.target_warehouse_storage_location = t_strg_loc[t_strg_loc.length - 1]
-              cur_frm.refresh_field('target_warehouse_storage_location')
-          }
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
           console.log('hide')
@@ -76,13 +69,6 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         if (s_wbs) {
           console.log('show')
-
-          let s_strg_loc = get_nearest_settings_id(frm.doc.posting_date, doc.s_warehouse)
-
-          if (s_strg_loc.length === 1) {
-            doc.source_warehouse_storage_location = s_strg_loc[s_strg_loc.length - 1]
-            cur_frm.refresh_field('source_warehouse_storage_location')
-          }
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
           console.log('hide')
@@ -105,7 +91,7 @@ frappe.ui.form.on("Stock Entry Detail", {
             cur_frm.refresh_field('source_warehouse_storage_location')
           }
       }
-    } else if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Receipt') {
+    } else if (frm.doc.stock_entry_type === 'Material Receipt') {
 
       if (doc.t_warehouse && doc.item_code) {
         let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
@@ -223,10 +209,17 @@ frappe.ui.form.on('Stock Entry', {
                 ]
               }
             } else {
-              return {
-                filters:[
-                  ['rarb_warehouse', '=', child['s_warehouse']]
-                ]
+              let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'])
+
+              if (settings_id.length > 0) {
+                return {
+                  filters:[
+                    ['rarb_warehouse', '=', child['s_warehouse']],
+                    ['name', 'in', name]
+                  ]
+                }
+              } else {
+                frappe.throw(__(`No Storage location for combination Source warehouse : ${child['t_warehouse']} and Item : ${child['item_code']}`))
               }
             }
           }
@@ -282,10 +275,18 @@ frappe.ui.form.on('Stock Entry', {
                 ]
               }
             } else {
-              return {
-                filters:[
-                  ['rarb_warehouse', '=', child['t_warehouse']]
-                ]
+
+              let name = get_storage_location(frm.doc.posting_date, child['t_warehouse'], child['item_code'])
+
+              if (name.length > 0) {
+                return {
+                  filters:[
+                    ['rarb_warehouse', '=', child['t_warehouse']],
+                    ['name', 'in', name]
+                  ]
+                }
+              } else {
+                frappe.throw(`No Storage location for combination Target warehouse : ${child['t_warehouse']} and Item : ${child['item_code']}`)
               }
             }
           }
@@ -340,6 +341,33 @@ frappe.ui.form.on('Stock Entry', {
   }
 });
 
+
+function get_storage_location(date, warehouse, item_code) {
+  let name = [];
+  frappe.call({
+    method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_storage_location',
+    args: {
+      'date': date,
+      'warehouse': warehouse,
+      'item_code': item_code
+    },
+    async: false,
+    callback: (r) => {
+      if (r.message.list) {
+        console.log(r.message.list)
+        r.message.list.forEach((i) => {
+          name.push(i.name);
+        });
+
+      } else if (r.message.EX) {
+        frappe.throw(__(r.message.EX))
+      } else {
+        name = []
+      }
+    }
+  });
+  return name
+}
 
 function check_stock_ledger_entry_for_transactions(doc) {
   let exc;

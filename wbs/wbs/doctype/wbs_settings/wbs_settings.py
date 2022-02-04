@@ -27,7 +27,7 @@ def get_nearest_settings_id(transaction_date, warehouse):
 		list = frappe.db.sql("""select twsl.name from `tabWBS Settings` as tws
 							join `tabWBS Storage Location` as twsl on twsl.wbs_settings_id = tws.name
 							where tws.warehouse=%s and tws.start_date<=%s and twsl.attribute_level = '4'
-							order by tws.start_date desc limit 1""", (warehouse, transaction_date), as_dict=1);
+							order by tws.start_date desc""", (warehouse, transaction_date), as_dict=1);
 		print(list)
 
 		if list and len(list) > 0:
@@ -57,7 +57,9 @@ def get_relative_settings(transaction_date, warehouse, item_code):
 		list = frappe.db.sql("""select twsl.name from `tabWBS Stored Items` as twsi
 							join `tabWBS Storage Location` as twsl on twsl.name = twsi.parent
 							join `tabWBS Settings` as tws on tws.name = twsl.wbs_settings_id
-							where (tws.start_date<=%s and tws.warehouse = %s) and (twsl.rarb_warehouse = %s and twsi.item_code = %s) and twsl.attribute_level = '4'""",
+							where (tws.start_date<=%s and tws.warehouse = %s)
+							and (twsl.rarb_warehouse = %s and twsi.item_code = %s)
+							and (twsl.attribute_level = '4' and twsl.is_group = '0')""",
 							(transaction_date, warehouse, warehouse, item_code), as_dict =1);
 
 		print(list)
@@ -132,5 +134,21 @@ def check_stock_ledger_entry_for_transactions(doc):
 		# 				return False
 
 		return {"SC": False}
+	except Exception as ex:
+		return {'EX': ex}
+
+@frappe.whitelist()
+def get_storage_location(date, warehouse, item_code):
+	try:
+		list  = frappe.db.sql("""select twsl.name from `tabWBS Stored Items` as twsi
+							join `tabWBS Storage Location` as twsl on twsl.name = twsi.parent
+							join `tabWBS Settings` as tws on tws.name = twsl.wbs_settings_id
+							where (tws.start_date<=%s and tws.warehouse = %s)
+							and (twsl.rarb_warehouse = %s and twsi.item_code != %s)
+							and (twsl.attribute_level = '4' and twsl.is_group = '1')""", (date, warehouse, warehouse, item_code),as_dict = 1)
+		print(list)
+		if list and len(list) > 0:
+			return {"list": list}
+		return False
 	except Exception as ex:
 		return {'EX': ex}

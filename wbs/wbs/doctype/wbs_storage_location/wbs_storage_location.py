@@ -161,7 +161,8 @@ def get_nearest_loc_with_item(date, item_code, warehouse):
 							join `tabWBS Storage Location` as twsl on twsl.wbs_settings_id = tws.name
 							join `tabWBS Stored Items` as twsi on twsi.parent = twsl.name
 							where (twsl.rarb_warehouse = %s and tws.warehouse= %s)
-							and (tws.start_date <= %s and twsi.item_code = %s) and twsl.attribute_level = '4'
+							and (tws.start_date <= %s and twsi.item_code = %s)
+							and (twsl.attribute_level = '4' and twsl.is_group = '0')
 							order by start_date desc""",(warehouse, warehouse, date, item_code), as_dict = 1);
 
 		if list and len(list) == 1:
