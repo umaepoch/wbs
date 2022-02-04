@@ -117,7 +117,6 @@ function get_nearest_loc_with_item(date, item_code, warehouse) {
     async: false,
     callback: (r) => {
       if (r.message.location) {
-        console.log(location)
         location = r.message.location
       } else if (r.message.EX) {
         frappe.throw(__(r.message.EX))
@@ -126,7 +125,7 @@ function get_nearest_loc_with_item(date, item_code, warehouse) {
       }
     }
   });
-  // return location
+  return location
 }
 
 function is_wbs(warehouse) {
