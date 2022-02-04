@@ -209,7 +209,7 @@ frappe.ui.form.on('Stock Entry', {
                 ]
               }
             } else {
-              let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'])
+              let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'], child['item_code'])
 
               if (settings_id.length > 0) {
                 return {
