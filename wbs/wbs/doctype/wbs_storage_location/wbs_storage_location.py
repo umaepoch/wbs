@@ -155,10 +155,14 @@ def get_specific_items(location):
 		return {'EX': ex}
 
 @frappe.whitelist()
-def check_default_location(loc):
+def get_nearest_loc_with_item(date, item_code, warehouse):
 	try:
-		list = frappe.db.sql("""select name from `tabWBS Storage Location`
-							where wbs_settings_id = %s and attribute_level = 4""",loc, as_dict = 1);
+		list = frappe.db.sql("""select twsl.name from `tabWBS Settings` as tws
+							join `tabWBS Storage Location` as twsl on twsl.wbs_settings_id = tws.name
+							join `tabWBS Stored Items` as twsi on twsi.parent = twsl.name
+							where (twsl.rarb_warehouse = %s and tws.warehouse= %s)
+							and (tws.start_date <= %s and twsi.item_code = %s) and twsl.attribute_level = '4'
+							order by start_date desc""",(warehouse, warehouse, date, item_code), as_dict = 1);
 
 		if list and len(list) == 1:
 			return {'location': list[len(list) - 1].name}

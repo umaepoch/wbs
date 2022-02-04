@@ -90,19 +90,48 @@ frappe.ui.form.on("Stock Entry Detail", {
         }
       }
     }
+  },
+  item_code: (frm, cdt, cdn) => {
+    var doc = locals[cdt][cdn]
+
+    if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Issue') {
+
+      if (doc.s_warehouse && doc.item_code) {
+
+          let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+
+          if (s_loc) {
+            doc.source_warehouse_storage_location = s_loc
+            cur_frm.refresh_field('source_warehouse_storage_location')
+          }
+      }
+    } else if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Receipt') {
+
+      if (doc.t_warehouse && doc.item_code) {
+        let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+
+        if(t_loc) {
+          doc.target_warehouse_storage_location = t_loc
+          cur_frm.refresh_field('target_warehouse_storage_location')
+        }
+      }
+    }
   }
 });
 
-function check_default_location(loc) {
+function get_nearest_loc_with_item(date, item_code, warehouse) {
   let location;
   frappe.call({
-    method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.check_default_location',
+    method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.get_nearest_loc_with_item',
     args: {
-      'loc': loc
+      'date': date,
+      'item_code': item_code,
+      'warehouse': warehouse
     },
     async: false,
     callback: (r) => {
       if (r.message.location) {
+        console.log(location)
         location = r.message.location
       } else if (r.message.EX) {
         frappe.throw(__(r.message.EX))
@@ -111,7 +140,7 @@ function check_default_location(loc) {
       }
     }
   });
-  return location
+  // return location
 }
 
 function is_wbs(warehouse) {
