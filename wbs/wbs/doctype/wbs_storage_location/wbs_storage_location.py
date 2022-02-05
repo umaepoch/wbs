@@ -170,3 +170,15 @@ def get_nearest_loc_with_item(date, item_code, warehouse):
 		return False
 	except Exception as ex:
 		return {'EX': ex}
+
+
+@frappe.whitelist()
+def get_strg_id(warehouse):
+	try:
+		list = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location` where name=%s""", warehouse, as_dict=1);
+
+		if list and len(list) > 0:
+			return {'ID': list[len(list) - 1].name_of_attribute_id}
+		return {'ID': False}
+	except Exception as ex:
+		return {'EX': ex}

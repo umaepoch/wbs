@@ -13,15 +13,16 @@
   {
    "fieldname": "attribute_level",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Attribute Level"
+   "label": "Attribute Level",
+   "read_only": 1
   },
   {
    "fieldname": "attribute_name",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Attribute Name",
-   "options": "Attribute Name"
+   "options": "Attribute Name",
+   "reqd": 1
   },
   {
    "fieldname": "refer_by",
@@ -36,7 +37,7 @@
   }
  ],
  "istable": 1,
- "modified": "2022-01-27 10:28:54.602065",
+ "modified": "2022-02-04 15:13:42.799387",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Attributes",

@@ -1,6 +1,13 @@
 // Copyright (c) 2022, yashwanth and contributors
 // For license information, please see license.txt
 
+const levels = {
+	'Room': 1,
+	'Aisle': 2,
+	'Rack': 3,
+	'Slot': 4
+}
+
 frappe.ui.form.on('WBS Settings', {
 	start_date: function(frm) {
     let present_date = new Date();
@@ -40,3 +47,39 @@ frappe.ui.form.on('WBS Settings', {
     }
   }
 });
+
+
+frappe.ui.form.on('WBS Attributes', {
+	wbs_attributes_add: (frm, cdt, cdn) => {
+		let doc  = locals[cdt][cdn]
+
+		if (doc.idx) {
+			doc.attribute_level = doc.idx
+			frm.refresh_field('wbs_attributes')
+		}
+	},
+	attribute_name: (frm, cdt, cdn) => {
+		let doc = locals[cdt][cdn]
+		let prev = frm.doc.wbs_attributes
+
+		if (doc.idx > 1) {
+			for (let i = 0; i < prev.length; i++) {
+				for (let j = i+1; j < prev.length; j++) {
+						if (prev[i].attribute_name === prev[j].attribute_name) {
+							frappe.throw(__(`Attribute Name already selected at row : ${prev[i].idx}`))
+						}
+				}
+			}
+		}
+
+		if (doc.attribute_name) {
+			for (const key in levels) {
+
+				if (doc.attribute_name === key) {
+					doc.attribute_level = levels[key]
+					frm.refresh_field('wbs_attributes')
+				}
+			}
+		}
+	}
+})

@@ -16,13 +16,15 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Warehouse",
-   "options": "Warehouse"
+   "options": "Warehouse",
+   "reqd": 1
   },
   {
    "fieldname": "start_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Start Date"
+   "label": "Start Date",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_3",
@@ -35,7 +37,7 @@
    "options": "WBS Attributes"
   }
  ],
- "modified": "2022-01-25 10:43:58.008844",
+ "modified": "2022-02-04 15:14:40.504036",
  "modified_by": "Administrator",
  "module": "Wbs",
  "name": "WBS Settings",

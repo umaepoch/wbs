@@ -6,9 +6,9 @@ frappe.ui.form.on("Stock Entry Detail", {
   form_render: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn];
 
-    if (!frm.doc.stock_entry_type) {
-      frappe.throw(__(`Please select Stock Entry Type before adding Items.`))
-    }
+    // if (!frm.doc.stock_entry_type) {
+    //   frappe.throw(__(`Please select Stock Entry Type before adding Items.`))
+    // }
 
     if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Issue') {
 
@@ -18,10 +18,12 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (s_wbs) {
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
-          frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
+          removeColumns(frm, ["source_warehouse_storage_location"], "items")
+          frm.refresh_field('items')
         }
       } else {
-        frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
+        removeColumns(frm, ["source_warehouse_storage_location"], "items")
+        frm.refresh_field('items')
       }
     }
 
@@ -33,10 +35,12 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (t_wbs) {
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
-          frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
+          removeColumns(frm, ["target_warehouse_storage_location"], "items")
+          frm.refresh_field('items')
         }
       } else {
-        frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
+        removeColumns(frm, ["target_warehouse_storage_location"], "items")
+        frm.refresh_field('items')
       }
     }
 
@@ -54,8 +58,12 @@ frappe.ui.form.on("Stock Entry Detail", {
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
           console.log('hide')
-          frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",0);
+          removeColumns(frm, ["target_warehouse_storage_location"], "items")
+          frm.refresh_field('items')
         }
+      } else {
+        removeColumns(frm, ["target_warehouse_storage_location"], "items")
+        frm.refresh_field('items')
       }
     }
   },
@@ -72,8 +80,12 @@ frappe.ui.form.on("Stock Entry Detail", {
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
           console.log('hide')
-          frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",0);
+          removeColumns(frm, ["source_warehouse_storage_location"], "items")
+          frm.refresh_field('items')
         }
+      } else {
+        removeColumns(frm, ["source_warehouse_storage_location"], "items")
+        frm.refresh_field('items')
       }
 
     }
@@ -81,7 +93,20 @@ frappe.ui.form.on("Stock Entry Detail", {
   item_code: (frm, cdt, cdn) => {
     var doc = locals[cdt][cdn]
 
-    if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Issue') {
+    // if (!doc.item_code) {
+    //
+    //   if (doc.source_warehouse_storage_location) {
+    //     doc.source_warehouse_storage_location = ''
+    //     cur_frm.refresh_field('source_warehouse_storage_location')
+    //   }
+    //
+    //   if (doc.target_warehouse_storage_location) {
+    //     doc.target_warehouse_storage_location = ''
+    //     cur_frm.refresh_field('target_warehouse_storage_location')
+    //   }
+    // }
+
+    if (frm.doc.stock_entry_type === 'Material Issue') {
 
       if (doc.s_warehouse && doc.item_code) {
 
@@ -89,22 +114,139 @@ frappe.ui.form.on("Stock Entry Detail", {
 
           if (s_loc) {
             doc.source_warehouse_storage_location = s_loc
-            cur_frm.refresh_field('source_warehouse_storage_location')
+            let id = get_strg_id(s_loc)
+            doc.source_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
           }
       }
     } else if (frm.doc.stock_entry_type === 'Material Receipt') {
-
       if (doc.t_warehouse && doc.item_code) {
         let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
 
         if(t_loc) {
           doc.target_warehouse_storage_location = t_loc
-          cur_frm.refresh_field('target_warehouse_storage_location')
+          let id = get_strg_id(t_loc)
+          doc.target_storage_location_id = id ? id : '';
+          frm.refresh_field('items')
+        }
+      }
+    } else if (frm.doc.stock_entry_type === 'Material Transfer') {
+
+      if ((doc.s_warehouse && doc.item_code) || (doc.t_warehouse && doc.item_code)) {
+        let s_wbs;
+        let t_wbs;
+
+        if (doc.s_warehouse) {
+          s_wbs = is_wbs(doc.s_warehouse)
+        } else {
+          s_wbs = ''
+        }
+
+        if (doc.t_warehouse) {
+          t_wbs = is_wbs(doc.t_warehouse)
+        } else {
+          t_wbs = ''
+
+        }
+
+        if (s_wbs) {
+          let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+
+          if (s_loc) {
+            doc.source_warehouse_storage_location = s_loc
+            let id = get_strg_id(s_loc)
+            doc.source_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          }
+        } else if (t_wbs) {
+          let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+
+          if(t_loc) {
+            doc.target_warehouse_storage_location = t_loc
+            let id = get_strg_id(t_loc)
+            doc.target_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          }
         }
       }
     }
+  },
+  source_warehouse_storage_location: (frm, cdt, cdn) => {
+    let doc = locals[cdt][cdn]
+
+    if (doc.source_warehouse_storage_location) {
+        let id = get_strg_id(doc.source_warehouse_storage_location)
+        doc.source_storage_location_id = id ? id : '';
+        frm.refresh_field('items')
+    }
+  },
+  target_warehouse_storage_location: (frm, cdt, cdn) =>{
+    let doc = locals[cdt][cdn]
+
+    if (doc.target_warehouse_storage_location) {
+      let id = get_strg_id(doc.target_warehouse_storage_location)
+      doc.target_storage_location_id = id ? id : '';
+      frm.refresh_field('items')
+    }
   }
 });
+
+function get_strg_id(warehouse) {
+  let id;
+  frappe.call({
+    method: 'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.get_strg_id',
+    args: {
+      'warehouse': warehouse
+    },
+    async: false,
+    freeze: true,
+    callback: (r) => {
+      if (r.message.EX) {
+        frappe.throw(__(r.message.EX))
+      }
+
+      if (r.message.ID) {
+        id = r.message.ID
+      } else {
+        id = false
+      }
+    }
+  })
+  return id
+}
+
+function removeColumns(frm, fields, table) {
+    let grid = frm.get_field(table).grid;
+
+    for (let field of fields) {
+        grid.fields_map[field].hidden = 1;
+    }
+
+    grid.visible_columns = undefined;
+    grid.setup_visible_columns();
+
+    grid.header_row.wrapper.remove();
+    delete grid.header_row;
+    grid.make_head();
+
+    for (let row of grid.grid_rows) {
+        if (row.open_form_button) {
+            row.open_form_button.parent().remove();
+            delete row.open_form_button;
+        }
+
+        for (let field in row.columns) {
+            if (row.columns[field] !== undefined) {
+                row.columns[field].remove();
+            }
+        }
+        delete row.columns;
+        row.columns = [];
+        row.render_row();
+    }
+
+}
+
 
 function get_nearest_loc_with_item(date, item_code, warehouse) {
   let location;
@@ -138,9 +280,10 @@ function is_wbs(warehouse) {
     },
     async: false,
     callback: (r) => {
-      if (r.message.is_wbs_active) {
+      if (r.message.is_wbs_active === 1) {
+        console.log(r.message.is_wbs_active)
         flag = true;
-      } else {
+      } else if (r.message.is_wbs_active === 0){
         console.log('false not active wbs')
         flag = false;
       }
@@ -209,9 +352,9 @@ frappe.ui.form.on('Stock Entry', {
                 ]
               }
             } else {
-              let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'], child['item_code'])
+              let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'])
 
-              if (settings_id.length > 0) {
+              if (name.length > 0) {
                 return {
                   filters:[
                     ['rarb_warehouse', '=', child['s_warehouse']],
@@ -276,7 +419,7 @@ frappe.ui.form.on('Stock Entry', {
               }
             } else {
 
-              let name = get_storage_location(frm.doc.posting_date, child['t_warehouse'], child['item_code'])
+              let name = get_storage_location(frm.doc.posting_date, child['t_warehouse'])
 
               if (name.length > 0) {
                 return {
@@ -342,14 +485,13 @@ frappe.ui.form.on('Stock Entry', {
 });
 
 
-function get_storage_location(date, warehouse, item_code) {
+function get_storage_location(date, warehouse) {
   let name = [];
   frappe.call({
     method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_storage_location',
     args: {
       'date': date,
-      'warehouse': warehouse,
-      'item_code': item_code
+      'warehouse': warehouse
     },
     async: false,
     callback: (r) => {
@@ -468,7 +610,7 @@ function get_nearest_settings_id(trans_date, warehouse) {
 function validate_child(child, purpose) {
 
   child.forEach(c => {
-    if (purpose === 'Material Issue' || purpose === 'Material Transfer') {
+    if (purpose === 'Material Issue') {
 
       if (c.s_warehouse) {
         let s_wbs = is_wbs(c.s_warehouse)
@@ -483,7 +625,7 @@ function validate_child(child, purpose) {
       }
     }
 
-    if (purpose === 'Material Receipt' || purpose === 'Material Transfer') {
+    if (purpose === 'Material Receipt') {
 
       if (c.t_warehouse) {
         let t_wbs = is_wbs(c.t_warehouse)
@@ -495,6 +637,41 @@ function validate_child(child, purpose) {
             frappe.validated = false;
           }
         }
+      }
+    }
+
+    if (purpose === 'Material Transfer') {
+      if (c.s_warehouse || c.t_warehouse) {
+        let s_wbs;
+        let t_wbs;
+        if (c.s_warehouse) {
+          s_wbs = is_wbs(c.s_warehouse)
+        } else {
+          s_wbs = ''
+        }
+
+        if (c.t_warehouse) {
+          t_wbs = is_wbs(c.t_warehouse)
+        } else {
+          t_wbs = ''
+        }
+
+        if (s_wbs) {
+
+          if (!c.source_warehouse_storage_location) {
+            frappe.throw(__(`Source Warehouse Storage Location is mandatory for Stock Entry Type : ${purpose}, Please select Target Storage location at row : ${c.idx}`))
+            frappe.validate = false;
+          }
+        }
+
+        if (t_wbs) {
+
+          if (!c.target_warehouse_storage_location) {
+            frappe.throw(__(`Target Warehouse Storage Location is mandatory for Stock Entry Type : ${purpose}, Please select Target Storage location at row : ${c.idx}`));
+            frappe.validated = false;
+          }
+        }
+
       }
     }
   });
