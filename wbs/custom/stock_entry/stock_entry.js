@@ -202,24 +202,70 @@ frappe.ui.form.on("Stock Entry Detail", {
   source_warehouse_storage_location: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn]
 
-    if (doc.source_warehouse_storage_location) {
-        let id = get_strg_id(doc.source_warehouse_storage_location)
-        doc.source_storage_location_id = id ? id : '';
-        frm.refresh_field('items')
-    } else {
-      doc.source_storage_location_id ='';
+    if (frm.doc.purpose === 'Material Transfer') {
+
+      if (doc.s_warehouse) {
+
+        let s_wbs = is_wbs(doc.s_warehouse)
+
+        if (!s_wbs) {
+          doc.source_warehouse_storage_location = ''
+          doc.source_storage_location_id = '';
+          frm.refresh_field('items')
+        }
+
+        if (s_wbs) {
+
+          if (doc.source_warehouse_storage_location) {
+            let id = get_strg_id(doc.source_warehouse_storage_location)
+            doc.source_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          } else {
+            doc.source_storage_location_id ='';
+            frm.refresh_field('items')
+          }
+        }
+      }
+    }
+
+    if (frm.doc.purpose === 'Material Receipt') {
+      doc.source_warehouse_storage_location = ''
+      doc.source_storage_location_id = '';
       frm.refresh_field('items')
     }
   },
   target_warehouse_storage_location: (frm, cdt, cdn) =>{
     let doc = locals[cdt][cdn]
 
-    if (doc.target_warehouse_storage_location) {
-      let id = get_strg_id(doc.target_warehouse_storage_location)
-      doc.target_storage_location_id = id ? id : '';
-      frm.refresh_field('items')
-    } else {
-      doc.target_storage_location_id ='';
+    if (frm.doc.purpose === 'Material Transfer') {
+
+      if (doc.t_warehouse) {
+
+        let t_wbs = is_wbs(doc.t_warehouse)
+
+        if (!t_wbs) {
+          doc.target_warehouse_storage_location = ''
+          doc.target_storage_location_id = '';
+          frm.refresh_field('items')
+        }
+
+        if (t_wbs) {
+
+          if (doc.target_warehouse_storage_location) {
+            let id = get_strg_id(doc.target_warehouse_storage_location)
+            doc.target_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          } else {
+            doc.target_storage_location_id ='';
+            frm.refresh_field('items')
+          }
+        }
+      }
+    }
+
+    if (frm.doc.purpose === 'Material Issue') {
+      doc.target_warehouse_storage_location = ''
+      doc.target_storage_location_id = '';
       frm.refresh_field('items')
     }
   }
