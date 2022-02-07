@@ -18,10 +18,14 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (s_wbs) {
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
+          cur_frm.set_df_property('target_warehouse_storage_location', 'hidden', true)
+          frm.refresh_field('items')
           removeColumns(frm, ["source_warehouse_storage_location"], "items")
           frm.refresh_field('items')
         }
       } else {
+        cur_frm.set_df_property('source_warehouse_storage_location', 'hidden', true)
+        frm.refresh_field('items')
         removeColumns(frm, ["source_warehouse_storage_location"], "items")
         frm.refresh_field('items')
       }
@@ -35,15 +39,28 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (t_wbs) {
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
+          cur_frm.set_df_property('target_warehouse_storage_location', 'hidden', true)
+          frm.refresh_field('items')
           removeColumns(frm, ["target_warehouse_storage_location"], "items")
           frm.refresh_field('items')
         }
       } else {
+        cur_frm.set_df_property('target_warehouse_storage_location', 'hidden', true)
+        frm.refresh_field('items')
         removeColumns(frm, ["target_warehouse_storage_location"], "items")
         frm.refresh_field('items')
       }
     }
 
+    if (!doc.source_warehouse_storage_location) {
+      doc.source_storage_location_id ='';
+      frm.refresh_field('items')
+    }
+
+    if (!doc.target_warehouse_storage_location) {
+      doc.target_storage_location_id ='';
+      frm.refresh_field('items')
+    }
   },
   t_warehouse: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn]
@@ -58,10 +75,14 @@ frappe.ui.form.on("Stock Entry Detail", {
           frm.fields_dict["items"].grid.set_column_disp("target_warehouse_storage_location",1);
         } else {
           console.log('hide')
+          cur_frm.set_df_property('target_warehouse_storage_location', 'hidden', true)
+          frm.refresh_field('items')
           removeColumns(frm, ["target_warehouse_storage_location"], "items")
           frm.refresh_field('items')
         }
       } else {
+        cur_frm.set_df_property('target_warehouse_storage_location', 'hidden', true)
+        frm.refresh_field('items')
         removeColumns(frm, ["target_warehouse_storage_location"], "items")
         frm.refresh_field('items')
       }
@@ -80,10 +101,14 @@ frappe.ui.form.on("Stock Entry Detail", {
           frm.fields_dict["items"].grid.set_column_disp("source_warehouse_storage_location",1);
         } else {
           console.log('hide')
+          cur_frm.set_df_property('source_warehouse_storage_location', 'hidden', true)
+          frm.refresh_field('items')
           removeColumns(frm, ["source_warehouse_storage_location"], "items")
           frm.refresh_field('items')
         }
       } else {
+        cur_frm.set_df_property('source_warehouse_storage_location', 'hidden', true)
+        frm.refresh_field('items')
         removeColumns(frm, ["source_warehouse_storage_location"], "items")
         frm.refresh_field('items')
       }
@@ -178,6 +203,9 @@ frappe.ui.form.on("Stock Entry Detail", {
         let id = get_strg_id(doc.source_warehouse_storage_location)
         doc.source_storage_location_id = id ? id : '';
         frm.refresh_field('items')
+    } else {
+      doc.source_storage_location_id ='';
+      frm.refresh_field('items')
     }
   },
   target_warehouse_storage_location: (frm, cdt, cdn) =>{
@@ -186,6 +214,9 @@ frappe.ui.form.on("Stock Entry Detail", {
     if (doc.target_warehouse_storage_location) {
       let id = get_strg_id(doc.target_warehouse_storage_location)
       doc.target_storage_location_id = id ? id : '';
+      frm.refresh_field('items')
+    } else {
+      doc.target_storage_location_id ='';
       frm.refresh_field('items')
     }
   }
