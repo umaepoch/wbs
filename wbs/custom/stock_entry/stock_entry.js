@@ -66,6 +66,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
+          console.log(cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location)
           cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 0;
           frm.refresh_field('items')
         } else {
