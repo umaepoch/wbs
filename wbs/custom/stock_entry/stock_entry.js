@@ -160,7 +160,24 @@ frappe.ui.form.on("Stock Entry Detail", {
 
         }
 
-        if (s_wbs) {
+        if (s_wbs && t_wbs) {
+          let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+          let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+
+          if (s_loc && t_loc) {
+
+          } else if(s_loc) {
+            doc.source_warehouse_storage_location = s_loc
+            let id = get_strg_id(s_loc)
+            doc.source_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          } else if (t_loc) {
+            doc.target_warehouse_storage_location = t_loc
+            let id = get_strg_id(t_loc)
+            doc.target_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          }
+        } else if (s_wbs) {
           let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
 
           if (s_loc) {
