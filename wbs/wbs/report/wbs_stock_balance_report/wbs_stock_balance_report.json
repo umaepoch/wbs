@@ -1,0 +1,36 @@
+{
+ "add_total_row": 0,
+ "creation": "2022-02-08 09:52:01.319273",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2022-02-08 09:52:03.651802",
+ "modified_by": "Administrator",
+ "module": "Wbs",
+ "name": "WBS Stock Balance Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Stock Ledger Entry",
+ "report_name": "WBS Stock Balance Report",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Maintenance User"
+  }
+ ]
+}
