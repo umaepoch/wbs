@@ -66,7 +66,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
-          console.log(cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location)
+          // console.log(cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location)
           cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 0;
           frm.refresh_field('items')
         } else {
@@ -139,6 +139,15 @@ frappe.ui.form.on("Stock Entry Detail", {
           let id = get_strg_id(t_loc)
           doc.target_storage_location_id = id ? id : '';
           frm.refresh_field('items')
+        }  else {
+          let previous = get_previous_transaction(frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+
+          if (previous.length > 0) {
+            doc.target_warehouse_storage_location = previous[previous.length - previous.length];
+            let id = get_strg_id(previous[previous.length - previous.length])
+            doc.target_storage_location_id = id ? id : '';
+            frm.refresh_field('items')
+          }
         }
       }
     } else if (frm.doc.stock_entry_type === 'Material Transfer') {
@@ -166,16 +175,51 @@ frappe.ui.form.on("Stock Entry Detail", {
 
           if (s_loc && t_loc) {
 
-          } else if(s_loc) {
+            if (s_loc) {
+              doc.source_warehouse_storage_location = s_loc
+              let id = get_strg_id(s_loc)
+              doc.source_storage_location_id = id ? id : '';
+              frm.refresh_field('items')
+
+              if (t_loc) {
+                doc.target_warehouse_storage_location = t_loc
+                let id2 = get_strg_id(t_loc)
+                doc.target_storage_location_id = id2 ? id2 : '';
+                frm.refresh_field('items')
+              }
+            }
+
+
+          } else if (s_loc && !t_loc) {
             doc.source_warehouse_storage_location = s_loc
             let id = get_strg_id(s_loc)
             doc.source_storage_location_id = id ? id : '';
             frm.refresh_field('items')
-          } else if (t_loc) {
+
+            if (!t_loc) {
+              let previous = get_previous_transaction(frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+
+              if (previous.length > 0) {
+                doc.target_warehouse_storage_location = previous[previous.length - previous.length];
+                let id = get_strg_id(previous[previous.length - previous.length])
+                doc.target_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+              }
+            }
+          } else if (t_loc && !s_loc) {
             doc.target_warehouse_storage_location = t_loc
             let id = get_strg_id(t_loc)
             doc.target_storage_location_id = id ? id : '';
             frm.refresh_field('items')
+          } else if (!t_loc && !s_loc) {
+            let previous = get_previous_transaction(frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+
+            if (previous.length > 0) {
+              doc.target_warehouse_storage_location = previous[previous.length - previous.length];
+              let id = get_strg_id(previous[previous.length - previous.length])
+              doc.target_storage_location_id = id ? id : '';
+              frm.refresh_field('items')
+            }
           }
         } else if (s_wbs) {
           let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
@@ -194,6 +238,15 @@ frappe.ui.form.on("Stock Entry Detail", {
             let id = get_strg_id(t_loc)
             doc.target_storage_location_id = id ? id : '';
             frm.refresh_field('items')
+          }  else {
+            let previous = get_previous_transaction(frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+
+            if (previous.length > 0) {
+              doc.target_warehouse_storage_location = previous[previous.length - previous.length];
+              let id = get_strg_id(previous[previous.length - previous.length])
+              doc.target_storage_location_id = id ? id : '';
+              frm.refresh_field('items')
+            }
           }
         }
       }
@@ -329,7 +382,6 @@ function is_wbs(warehouse) {
     async: false,
     callback: (r) => {
       if (r.message.is_wbs_active === 1) {
-        console.log(r.message.is_wbs_active)
         flag = true;
       } else if (r.message.is_wbs_active === 0){
         console.log('false not active wbs')
@@ -456,16 +508,27 @@ frappe.ui.form.on('Stock Entry', {
           let t_wbs = is_wbs(child['t_warehouse'])
 
           if (t_wbs) {
-            let settings_id = get_relative_settings(frm.doc.posting_date, child['t_warehouse'], child['item_code'])
+            let name = get_relative_settings(frm.doc.posting_date, child['t_warehouse'], child['item_code'])
 
-            if (settings_id.length > 0) {
+            if (name.length > 0) {
               return {
                 filters:[
                   ['rarb_warehouse', '=', child['t_warehouse']],
-                  ['name', 'in', settings_id]
+                  ['name', 'in', name]
                 ]
               }
             } else {
+              let last_transaction = get_previous_transaction(frm.doc.posting_date, child['t_warehouse'], child['item_code'])
+
+              if (last_transaction.length > 0) {
+
+                return {
+                  filters:[
+                    ['rarb_warehouse', '=', child['t_warehouse']],
+                    ['name', 'in', last_transaction]
+                  ]
+                }
+              }
 
               let name = get_storage_location(frm.doc.posting_date, child['t_warehouse'])
 
@@ -532,6 +595,29 @@ frappe.ui.form.on('Stock Entry', {
   }
 });
 
+function get_previous_transaction(date, warehouse, item_code) {
+  let name;
+  frappe.call({
+    method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_previous_transaction',
+    args: {
+      'date': date,
+      'warehouse': warehouse,
+      'item_code': item_code
+    },
+    async: false,
+    callback: (r) => {
+      if (r.message.list) {
+        name = [r.message.list.target_warehouse_storage_location]
+      } else if (r.message.EX) {
+        frappe.throw(__(r.message.EX))
+      } else {
+        name = []
+      }
+    }
+  });
+  return name
+}
+
 
 function get_storage_location(date, warehouse) {
   let name = [];
@@ -544,7 +630,6 @@ function get_storage_location(date, warehouse) {
     async: false,
     callback: (r) => {
       if (r.message.list) {
-        console.log(r.message.list)
         r.message.list.forEach((i) => {
           name.push(i.name);
         });

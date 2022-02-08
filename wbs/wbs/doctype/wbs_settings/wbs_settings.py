@@ -187,3 +187,48 @@ def get_storage_location(date, warehouse):
 		return False
 	except Exception as ex:
 		return {'EX': ex}
+
+
+@frappe.whitelist()
+def get_previous_transaction(date, warehouse, item_code):
+	try:
+		print('previous transaction')
+		list = frappe.db.sql("""select sle.item_code, sed.target_warehouse_storage_location, sle.posting_date, sle.posting_time, sle.actual_qty, sle.qty_after_transaction, sle.voucher_no from `tabStock Ledger Entry` as sle
+							join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
+							where sle.posting_date<= %s and sle.warehouse = %s and sle.item_code = %s
+							order by DATE(sle.posting_date) desc, sle.posting_time desc""", (date, warehouse, item_code), as_dict = 1);
+
+		if list and len(list) > 0:
+			transaction = list[len(list) - len(list)]
+
+			if transaction:
+				if transaction.get('target_warehouse_storage_location'):
+					doc = frappe.get_doc('WBS Storage Location', transaction.get('target_warehouse_storage_location'))
+
+					if doc:
+						settings = frappe.get_doc('WBS Settings', doc.wbs_settings_id)
+
+						if settings:
+							doc_list = frappe.db.sql("""select sle.item_code, sed.target_warehouse_storage_location, se.purpose, sle.actual_qty, sle.qty_after_transaction, sle.posting_date, sle.posting_time from `tabStock Ledger Entry` as sle
+													join `tabStock Entry` as se on se.name = sle.voucher_no
+													join `tabStock Entry Detail` as sed on sed.parent = se.name
+													where (sle.warehouse = %s and (sle.posting_date <= %s and sle.posting_date >= %s))
+													and (sle.item_code = %s and sed.target_warehouse_storage_location=%s)
+													order by DATE(sle.posting_date) desc, sle.posting_time desc""",(warehouse, date, settings.start_date, item_code, doc.name), as_dict = 1);
+
+							if doc_list and len(doc_list) > 0:
+								return {'list': doc_list[len(doc_list) - len(doc_list)]}
+							else:
+								return False
+						else:
+							return False
+					else:
+						return False
+
+				else:
+					return False
+			else:
+				return False
+		return False
+	except Exception as ex:
+		return {'EX': ex}
