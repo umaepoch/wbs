@@ -202,7 +202,7 @@ def get_previous_transaction(date, warehouse, item_code):
 			transaction = list[len(list) - len(list)]
 
 			if transaction:
-				if transaction.get('target_warehouse_storage_location'):
+				if transaction.get('target_warehouse_storage_location') and int(transaction.get('qty_after_transaction')) > 0:
 					doc = frappe.get_doc('WBS Storage Location', transaction.get('target_warehouse_storage_location'))
 
 					if doc:

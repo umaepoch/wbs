@@ -44,5 +44,25 @@ def get_data():
 				}
 
 			]
-		}
+		},
+		{
+            "label": "WBS Reports",
+            "icon": "fa fa-cog",
+            "items": [
+                {
+                    "type": "report",
+					"is_query_report": True,
+					"name": "WBS Stock Ledger Report",
+					"doctype": "Stock Ledger Entry",
+					"onboard": 1,
+                },
+                {
+                    "type": "report",
+					"is_query_report": True,
+					"name": "WBS Stock Balance Report",
+					"doctype": "Stock Ledger Entry",
+					"onboard": 1,
+                }
+            ]
+        }
 	]

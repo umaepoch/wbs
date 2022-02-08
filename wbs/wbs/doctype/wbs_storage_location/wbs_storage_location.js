@@ -529,3 +529,33 @@ function get_attribute_name(ID, lvl) {
 	});
 	return flag
 }
+
+
+frappe.ui.form.on('WBS Stored Items', 'item_code', function(frm, cdt, cdn) {
+	let doc = locals[cdt][cdn]
+
+	if (doc.item_code) {
+		check_item_already_exist(doc.item_code)
+	}
+});
+
+
+function check_item_already_exist(item_code) {
+	frappe.call({
+		method:'wbs.wbs.doctype.wbs_storage_location.wbs_storage_location.check_item_already_exist',
+		args: {
+			'item_code': item_code
+		},
+		async: true,
+		callback: (r) => {
+			if (r.message) {
+				r.message.forEach((i) => {
+					frappe.throw(__(`Item : ${item_code} already assigned for storage location : ${i.parent}`))
+				});
+
+			} else if (r.message.EX) {
+				frappe.throw(__(r.message.EX))
+			}
+		}
+	});
+}

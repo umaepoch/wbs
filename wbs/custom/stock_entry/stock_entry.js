@@ -580,18 +580,12 @@ frappe.ui.form.on('Stock Entry', {
     let child = doc.items
     validate_child(child, doc.purpose);
 
-    let flag = check_stock_ledger_entry_for_transactions(JSON.stringify(doc))
-
-    if (flag) {
-        frappe.throw(__(flag))
-        frappe.validated = false;
-    }
-  },
-  after_save: (frm, cdt, cdn) => {
-
-    if (frm.doc.docstatus === 1) {
-      console.log(frm.doc.docstatus)
-    }
+    // let flag = check_stock_ledger_entry_for_transactions(JSON.stringify(doc))
+    //
+    // if (flag) {
+    //     frappe.throw(__(flag))
+    //     frappe.validated = false;
+    // }
   }
 });
 

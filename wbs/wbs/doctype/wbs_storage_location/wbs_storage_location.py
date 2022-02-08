@@ -182,3 +182,19 @@ def get_strg_id(warehouse):
 		return {'ID': False}
 	except Exception as ex:
 		return {'EX': ex}
+
+
+@frappe.whitelist()
+def check_item_already_exist(item_code):
+	try:
+		if item_code:
+			items = frappe.db.sql("""select tsi.parent from `tabWBS Stored Items` as tsi
+								join `tabWBS Storage Location` as tsl on tsl.name = tsi.parent
+								where item_code=%s and tsl.is_group='0'""", item_code, as_dict = 1)
+
+			if items:
+				return items
+			return False
+		return False
+	except Exception as ex:
+		return {'EX': ex}
