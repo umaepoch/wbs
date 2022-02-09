@@ -26,7 +26,7 @@ def get_nearest_settings_id(transaction_date, warehouse):
 	try:
 		list = frappe.db.sql("""select twsl.name from `tabWBS Settings` as tws
 							join `tabWBS Storage Location` as twsl on twsl.wbs_settings_id = tws.name
-							where tws.warehouse=%s and tws.start_date<=%s and twsl.attribute_level = '4'
+							where tws.warehouse=%s and tws.start_date<=%s and twsl.is_group = '0'
 							order by tws.start_date desc""", (warehouse, transaction_date), as_dict=1);
 		print(list)
 
@@ -61,7 +61,7 @@ def get_relative_settings(transaction_date, warehouse, item_code):
 							join `tabWBS Settings` as tws on tws.name = twsl.wbs_settings_id
 							where (tws.start_date<=%s and tws.warehouse = %s)
 							and (twsl.rarb_warehouse = %s and twsi.item_code = %s)
-							and (twsl.attribute_level = '4' and twsl.is_group = '0')""",
+							and (twsl.storage_location_can_store = 'Specific Items' and twsl.is_group = '0')""",
 							(transaction_date, warehouse, warehouse, item_code), as_dict =1);
 
 		print(list)
@@ -180,7 +180,7 @@ def get_storage_location(date, warehouse):
 							join `tabWBS Settings` as tws on tws.name = twsl.wbs_settings_id
 							where (tws.start_date<=%s and tws.warehouse = %s)
 							and (twsl.rarb_warehouse = %s)
-							and (twsl.attribute_level = '4' and twsl.is_group = '1')""", (date, warehouse, warehouse),as_dict = 1)
+							and (twsl.storage_location_can_store = 'Any Items' and twsl.is_group = '0')""", (date, warehouse, warehouse),as_dict = 1)
 		print(list)
 		if list and len(list) > 0:
 			return {"list": list}
@@ -190,45 +190,29 @@ def get_storage_location(date, warehouse):
 
 
 @frappe.whitelist()
-def get_previous_transaction(date, warehouse, item_code):
+def get_previous_transaction(type, date, warehouse, item_code):
 	try:
-		print('previous transaction')
-		list = frappe.db.sql("""select sle.item_code, sed.target_warehouse_storage_location, sle.posting_date, sle.posting_time, sle.actual_qty, sle.qty_after_transaction, sle.voucher_no from `tabStock Ledger Entry` as sle
+		list = frappe.db.sql("""select sle.voucher_no, sle.item_code, sle.qty_after_transaction, sed.s_warehouse, sed.t_warehouse, sed.target_warehouse_storage_location, sed.source_warehouse_storage_location
+							from `tabStock Ledger Entry` as sle
+							join `tabStock Entry` as se on se.name = sle.voucher_no
 							join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
-							where sle.posting_date<= %s and sle.warehouse = %s and sle.item_code = %s
-							order by DATE(sle.posting_date) desc, sle.posting_time desc""", (date, warehouse, item_code), as_dict = 1);
+							where sle.warehouse = %s and sle.item_code = %s and sle.posting_date <= %s
+							order by DATE(sle.posting_date) desc, sle.posting_time desc""", (warehouse, item_code, date), as_dict = 1)
 
-		if list and len(list) > 0:
+		if list:
 			transaction = list[len(list) - len(list)]
+			if type == 'TARGET':
+				if int(transaction.get('qty_after_transaction')) > 0:
+					if transaction.get('s_warehouse') == warehouse:
+						return {'strg_loc': transaction.get('source_warehouse_storage_location')}
+					if transaction.get('t_warehouse') == warehouse:
+						return {'strg_loc': transaction.get('target_warehouse_storage_location')}
+			elif type == 'SOURCE':
+				if transaction.get('s_warehouse') == warehouse:
+					return {'strg_loc': transaction.get('source_warehouse_storage_location')}
+				if transaction.get('t_warehouse') == warehouse:
+					return {'strg_loc': transaction.get('target_warehouse_storage_location')}
 
-			if transaction:
-				if transaction.get('target_warehouse_storage_location') and int(transaction.get('qty_after_transaction')) > 0:
-					doc = frappe.get_doc('WBS Storage Location', transaction.get('target_warehouse_storage_location'))
-
-					if doc:
-						settings = frappe.get_doc('WBS Settings', doc.wbs_settings_id)
-
-						if settings:
-							doc_list = frappe.db.sql("""select sle.item_code, sed.target_warehouse_storage_location, se.purpose, sle.actual_qty, sle.qty_after_transaction, sle.posting_date, sle.posting_time from `tabStock Ledger Entry` as sle
-													join `tabStock Entry` as se on se.name = sle.voucher_no
-													join `tabStock Entry Detail` as sed on sed.parent = se.name
-													where (sle.warehouse = %s and (sle.posting_date <= %s and sle.posting_date >= %s))
-													and (sle.item_code = %s and sed.target_warehouse_storage_location=%s)
-													order by DATE(sle.posting_date) desc, sle.posting_time desc""",(warehouse, date, settings.start_date, item_code, doc.name), as_dict = 1);
-
-							if doc_list and len(doc_list) > 0:
-								return {'list': doc_list[len(doc_list) - len(doc_list)]}
-							else:
-								return False
-						else:
-							return False
-					else:
-						return False
-
-				else:
-					return False
-			else:
-				return False
 		return False
 	except Exception as ex:
 		return {'EX': ex}
