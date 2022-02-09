@@ -462,7 +462,12 @@ frappe.ui.form.on('Stock Entry', {
                   ]
                 }
               } else {
-                frappe.throw(__(`No Storage location for combination Source warehouse : ${child['t_warehouse']} and Item : ${child['item_code']}`))
+                return {
+                  filters:[
+                    ['rarb_warehouse', '=', child['s_warehouse']],
+                    ['is_group', '=', '1']
+                  ]
+                }
               }
             }
           }
@@ -540,7 +545,12 @@ frappe.ui.form.on('Stock Entry', {
                   ]
                 }
               } else {
-                frappe.throw(`No Storage location for combination Target warehouse : ${child['t_warehouse']} and Item : ${child['item_code']}`)
+                return {
+                  filters:[
+                    ['rarb_warehouse', '=', child['s_warehouse']],
+                    ['is_group', '=', '1']
+                  ]
+                }
               }
             }
           }
