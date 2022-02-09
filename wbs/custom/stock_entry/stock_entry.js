@@ -465,7 +465,8 @@ frappe.ui.form.on('Stock Entry', {
                 return {
                   filters:[
                     ['rarb_warehouse', '=', child['s_warehouse']],
-                    ['is_group', '=', '1']
+                    ['is_group', '=', '1'],
+                    ['attribute_level', '=', '4']
                   ]
                 }
               }
@@ -547,8 +548,9 @@ frappe.ui.form.on('Stock Entry', {
               } else {
                 return {
                   filters:[
-                    ['rarb_warehouse', '=', child['s_warehouse']],
-                    ['is_group', '=', '1']
+                    ['rarb_warehouse', '=', child['t_warehouse']],
+                    ['is_group', '=', '1'],
+                    ['attribute_level', '=', '4']
                   ]
                 }
               }
