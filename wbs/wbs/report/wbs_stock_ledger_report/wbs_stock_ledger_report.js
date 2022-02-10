@@ -1,6 +1,8 @@
 // Copyright (c) 2016, yashwanth and contributors
 // For license information, please see license.txt
 /* eslint-disable */
+var to_date;
+var from_date;
 
 frappe.query_reports["WBS Stock Ledger Report"] = {
 	"filters": [
@@ -23,13 +25,19 @@ frappe.query_reports["WBS Stock Ledger Report"] = {
 				if (id) {
 					let start_date = get_start_date(id)
 					let end_date = get_end_date(id)
-
+					let warehouse = get_warehouse(id)
 					if (start_date) {
+						from_date = start_date
 						frappe.query_report.set_filter_value('from_date', start_date)
 					}
 
 					if (end_date) {
+						to_date = end_date
 						frappe.query_report.set_filter_value('to_date', end_date)
+					}
+
+					if (warehouse) {
+						frappe.query_report.set_filter_value('warehouse', warehouse)
 					}
 				}
 			}
@@ -149,4 +157,25 @@ function get_end_date(id) {
 		}
 	});
 	return date
+}
+
+function get_warehouse(id){
+	let warehouse;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_warehouse',
+		args: {
+			'ID': id
+		},
+		async: false,
+		callback: (r) => {
+			if (r.message.warehouse) {
+				warehouse = r.message.warehouse
+			} else if (r.message.EX) {
+				frappe.throw(__(r.message.EX))
+			} else {
+				warehouse = false
+			}
+		}
+	})
+	return warehouse
 }

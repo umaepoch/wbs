@@ -235,13 +235,12 @@ def get_end_date(ID):
 			warehouse = frappe.db.sql("""select warehouse, start_date from `tabWBS Settings` where name=%s""",ID, as_dict = 1)
 
 			if warehouse:
-				print(warehouse)
 				date = frappe.db.sql("""select name, start_date from `tabWBS Settings`
 										where warehouse = %s and start_date > %s
 										order by DATE(start_date) asc""",
 										(warehouse[len(warehouse) - len(warehouse)].warehouse, warehouse[len(warehouse) - len(warehouse)].start_date),
 										as_dict = 1);
-				print(date)
+
 				if date and date[len(date) - len(date)].start_date:
 					next_date = date[len(date) - len(date)].start_date
 					end_date = next_date - timedelta(1)
@@ -251,3 +250,16 @@ def get_end_date(ID):
 		return False
 	except Exception as ex:
 		return {'EX': ex}
+
+@frappe.whitelist()
+def get_warehouse(ID):
+	try:
+		if ID:
+			warehouse = frappe.db.sql("""select warehouse from `tabWBS Settings` where name=%s""",ID, as_dict = 1)
+
+			if warehouse and warehouse[len(warehouse) - len(warehouse)].warehouse:
+				return {'warehouse': warehouse[len(warehouse) - len(warehouse)].warehouse}
+
+		return False
+	except Exception as ex:
+		return {"EX": ex}
