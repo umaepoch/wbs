@@ -24,6 +24,9 @@ def execute(filters=None):
 
 	actual_qty = stock_value = 0
 
+	if filters.get('wbs_settings'):
+		sl_entries = update_wbs_storage_location(sl_entries, filters)
+
 	available_serial_nos = {}
 	for sle in sl_entries:
 
@@ -53,29 +56,47 @@ def execute(filters=None):
 
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 
-	if filters.get('wbs_storage_location'):
-		data = update_wbs_storage_location(data, filters)
 	return columns, data
 
 def update_wbs_storage_location(data, filters):
+	rpt = []
 	if data:
 		for d in data:
-			if d.voucher_no:
-				wbs_conditions_sql = "select source_warehouse_storage_location, target_warehouse_storage_location from `tabStock Entry Detail` where parent = %s"
-				if filters.get('wbs_storage_location'):
-					wbs_conditions_sql += "and (source_warehouse_storage_location = %s or target_warehouse_storage_location = %s)"
+			# print("TO FILTER DATA : ",d)
+			if d.get('source_warehouse_storage_location') is not None and d.get('source_warehouse_storage_location'):
+				s_location = frappe.db.sql("""select name, name_of_attribute_id
+									from `tabWBS Storage Location`
+									where wbs_settings_id=%s and name=%s and is_group='0'""",
+									(filters.get('wbs_settings'), d.get('source_warehouse_storage_location')),
+									as_dict=1)
 
-				if wbs_conditions_sql:
-					location = frappe.db.sql(wbs_conditions_sql, (d.voucher_no, filters.get('wbs_storage_location'), filters.get('wbs_storage_location')), as_dict = 1)
+				if s_location and s_location is not None:
+					for l in s_location:
+						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+							d.update({
+							'wbs_storage_location': l.get('name'),
+							'wbs_id': l.get('name_of_attribute_id')
+							})
+			if d.get('target_warehouse_storage_location') is not None and d.get('target_warehouse_storage_location'):
+				t_location = frappe.db.sql("""select name, name_of_attribute_id
+									from `tabWBS Storage Location`
+									where wbs_settings_id=%s and name=%s and is_group='0'""",
+									(filters.get('wbs_settings'), d.get('target_warehouse_storage_location')),
+									as_dict=1)
+				if t_location and t_location is not None:
+					for l in t_location:
+						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+							d.update({
+							'wbs_storage_location': l.get('name'),
+							'wbs_id': l.get('name_of_attribute_id')
+							})
 
-					if location:
-						print("UPDATING DICTIONARY")
-						d.update({
-							"source_warehouse_storage_location": location[len(location) - len(location)].source_warehouse_storage_location if location[len(location) - len(location)].source_warehouse_storage_location else "",
-							"target_warehouse_storage_location": location[len(location) - len(location)].target_warehouse_storage_location if location[len(location) - len(location)].target_warehouse_storage_location else ""
-						})
+	for d in data:
+		if d.get('wbs_storage_location') and d.get('wbs_id'):
+			rpt.append(d)
 
-	print(data)
+	if rpt and len(rpt) > 0:
+		return rpt
 	return data
 
 def update_available_serial_nos(available_serial_nos, sle):
@@ -105,8 +126,8 @@ def get_columns():
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},
 		{"label": _("Item Name"), "fieldname": "item_name", "width": 100},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
-		{"label": _("Source Warehouse Storage Location"), "fieldname": "source_warehouse_storage_location", "fieldtype": "Link", "options": "WBS Storage Location", "width": 100},
-		{"label": _("Target Warehouse Storage Location"), "fieldname": "target_warehouse_storage_location", "fieldtype": "Link", "options": "WBS Storage Location", "width": 100},
+		{"label": _("WBS Storage Location"), "fieldname": "wbs_storage_location", "fieldtype": "Link", "options": "WBS Storage Location", "width": 150},
+		{"label": _("WBS ID"), "fieldname": "wbs_id", "width":150},
 		{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 100},
 		{"label": _("Description"), "fieldname": "description", "width": 200},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
@@ -137,15 +158,18 @@ def get_stock_ledger_entries(filters, items):
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join([frappe.db.escape(i) for i in items]))
 
-	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
-			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
-			stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project, stock_value_difference
-		from `tabStock Ledger Entry` sle
-		where company = %(company)s and
-			posting_date between %(from_date)s and %(to_date)s
+	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
+			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction,
+			sed.source_warehouse_storage_location, sed.target_warehouse_storage_location, sle.incoming_rate, sle.valuation_rate,
+			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference
+		from `tabStock Ledger Entry` as sle
+		join `tabStock Entry` as se on se.name = sle.voucher_no
+		join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
+		where sle.company = %(company)s and
+			sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
-			order by posting_date asc, posting_time asc, creation asc"""\
+			order by sle.posting_date asc, sle.posting_time asc, sle.creation asc"""\
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
@@ -203,11 +227,11 @@ def get_sle_conditions(filters):
 		if warehouse_condition:
 			conditions.append(warehouse_condition)
 	if filters.get("voucher_no"):
-		conditions.append("voucher_no=%(voucher_no)s")
+		conditions.append("sle.voucher_no=%(voucher_no)s")
 	if filters.get("batch_no"):
-		conditions.append("batch_no=%(batch_no)s")
+		conditions.append("sle.batch_no=%(batch_no)s")
 	if filters.get("project"):
-		conditions.append("project=%(project)s")
+		conditions.append("sle.project=%(project)s")
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 

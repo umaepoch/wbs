@@ -13,14 +13,24 @@ frappe.query_reports["WBS Stock Ledger Report"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"wbs_storage_location",
-			"label": __("WBS Storage Location"),
+			"fieldname":"wbs_settings",
+			"label": __("WBS Settings"),
 			"fieldtype": "Link",
-			"options": "WBS Storage Location",
+			"options": "WBS Settings",
 			"reqd": 1,
-			"get_query": function() {
-				return {
-					filters: {'attribute_level': '4'} 
+			"on_change": function() {
+				let id = frappe.query_report.get_filter_value('wbs_settings')
+				if (id) {
+					let start_date = get_start_date(id)
+					let end_date = get_end_date(id)
+
+					if (start_date) {
+						frappe.query_report.set_filter_value('from_date', start_date)
+					}
+
+					if (end_date) {
+						frappe.query_report.set_filter_value('to_date', end_date)
+					}
 				}
 			}
 		},
@@ -96,3 +106,47 @@ frappe.query_reports["WBS Stock Ledger Report"] = {
 		}
 	]
 };
+
+function get_start_date(id) {
+	let date;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_start_date',
+		args: {
+			'ID': id
+		},
+		async: false,
+		callback: (r) => {
+			if(r.message.from_date) {
+				date = r.message.from_date
+			} else if (r.message.EX){
+				frappe.throw(__(r.message.EX))
+			} else {
+				date = false
+			}
+		}
+	});
+	return date
+}
+
+function get_end_date(id) {
+	let date;
+	frappe.call({
+		method: 'wbs.wbs.doctype.wbs_settings.wbs_settings.get_end_date',
+		args: {
+			'ID': id
+		},
+		async: false,
+		callback: (r) => {
+			if(r.message.to_date) {
+				date = r.message.to_date
+			} else if (r.message.INFINITE) {
+				date = ''
+			} else if (r.message.EX){
+				frappe.throw(__(r.message.EX))
+			} else {
+				date = false
+			}
+		}
+	});
+	return date
+}

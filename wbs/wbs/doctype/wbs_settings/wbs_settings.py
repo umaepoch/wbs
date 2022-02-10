@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import json
 from frappe.model.document import Document
-import datetime
+from datetime import date, timedelta
 
 class WBSSettings(Document):
 	pass
@@ -204,15 +204,50 @@ def get_previous_transaction(type, date, warehouse, item_code):
 			if type == 'TARGET':
 				if int(transaction.get('qty_after_transaction')) > 0:
 					if transaction.get('s_warehouse') == warehouse:
-						return {'strg_loc': transaction.get('source_warehouse_storage_location')}
+						return {'strg_loc': transaction.get('source_warehouse_storage_location') if transaction.get('source_warehouse_storage_location') else ''}
 					if transaction.get('t_warehouse') == warehouse:
-						return {'strg_loc': transaction.get('target_warehouse_storage_location')}
+						return {'strg_loc': transaction.get('target_warehouse_storage_location') if transaction.get('target_warehouse_storage_location') else ''}
 			elif type == 'SOURCE':
 				if transaction.get('s_warehouse') == warehouse:
-					return {'strg_loc': transaction.get('source_warehouse_storage_location')}
+					return {'strg_loc': transaction.get('source_warehouse_storage_location') if transaction.get('source_warehouse_storage_location') else ''}
 				if transaction.get('t_warehouse') == warehouse:
-					return {'strg_loc': transaction.get('target_warehouse_storage_location')}
+					return {'strg_loc': transaction.get('target_warehouse_storage_location') if transaction.get('target_warehouse_storage_location') else ''}
 
+		return False
+	except Exception as ex:
+		return {'EX': ex}
+
+
+@frappe.whitelist()
+def get_start_date(ID):
+	try:
+		if ID:
+			start_date = frappe.db.sql("""select start_date from `tabWBS Settings` where name=%s""", ID, as_dict = 1)
+			return {'from_date':start_date[len(start_date) - len(start_date)].start_date}
+		return False
+	except Exception as ex:
+		return{'EX': ex}
+
+@frappe.whitelist()
+def get_end_date(ID):
+	try:
+		if ID:
+			warehouse = frappe.db.sql("""select warehouse, start_date from `tabWBS Settings` where name=%s""",ID, as_dict = 1)
+
+			if warehouse:
+				print(warehouse)
+				date = frappe.db.sql("""select name, start_date from `tabWBS Settings`
+										where warehouse = %s and start_date > %s
+										order by DATE(start_date) asc""",
+										(warehouse[len(warehouse) - len(warehouse)].warehouse, warehouse[len(warehouse) - len(warehouse)].start_date),
+										as_dict = 1);
+				print(date)
+				if date and date[len(date) - len(date)].start_date:
+					next_date = date[len(date) - len(date)].start_date
+					end_date = next_date - timedelta(1)
+					return {'to_date':end_date}
+				else:
+					return {'INFINITE': 1}
 		return False
 	except Exception as ex:
 		return {'EX': ex}
