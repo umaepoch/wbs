@@ -5,8 +5,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import cint, flt
+from datetime import datetime
+import pandas as pd
 from erpnext.stock.utils import update_included_uom_in_report
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
+from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date
+from wbs.wbs.doctype.wbs_settings.wbs_settings import get_end_date
 
 def execute(filters=None):
 	include_uom = filters.get("include_uom")
@@ -24,6 +28,7 @@ def execute(filters=None):
 
 	actual_qty = stock_value = 0
 
+	validate_date(filters)
 	if filters.get('wbs_settings'):
 		sl_entries = update_wbs_storage_location(sl_entries, filters)
 
@@ -57,6 +62,23 @@ def execute(filters=None):
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 
 	return columns, data
+
+
+def validate_date(filters):
+	if filters.get('wbs_settings'):
+		actual_from_date = get_start_date(filters.get('wbs_settings'))
+		actual_to_date = get_end_date(filters.get('wbs_settings'))
+		selected_from_date = datetime.strptime(filters.get('from_date'), '%Y-%m-%d').date() if filters.get('from_date') else ''
+		selected_to_date = datetime.strptime(filters.get('to_date'), '%Y-%m-%d').date() if filters.get('to_date') else ''
+
+		if actual_from_date.get('from_date') and actual_to_date.get('to_date'):
+			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date') or selected_to_date > actual_to_date.get('to_date') or selected_to_date < actual_from_date.get('from_date'):
+				frappe.throw(_('From and To date should be between WBS Settings Duration'))
+		if actual_from_date.get('from_date') and actual_to_date.get('INFINITE'):
+			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date'):
+				frappe.throw(_('From and To date should be between WBS Settings Duration'))
+
+	return
 
 def update_wbs_storage_location(data, filters):
 	rpt = []
