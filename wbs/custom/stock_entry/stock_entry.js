@@ -132,9 +132,9 @@ frappe.ui.form.on("Stock Entry Detail", {
             let previous = get_previous_transaction("SOURCE",frm.doc.posting_date, doc.s_warehouse, doc.item_code)
 
             if (previous) {
-              doc.target_warehouse_storage_location = previous.strg_loc;
+              doc.source_warehouse_storage_location = previous.strg_loc;
               let id = get_strg_id(previous.strg_loc)
-              doc.target_storage_location_id = id ? id : '';
+              doc.source_storage_location_id = id ? id : '';
               frm.refresh_field('items')
             }
           }
