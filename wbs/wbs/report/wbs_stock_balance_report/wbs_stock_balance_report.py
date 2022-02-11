@@ -112,7 +112,7 @@ def validate_date(filters):
 			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date') or selected_to_date > actual_to_date.get('to_date') or selected_to_date < actual_from_date.get('from_date'):
 				frappe.throw(_('From and To date should be between WBS Settings Duration'))
 		if actual_from_date.get('from_date') and actual_to_date.get('INFINITE'):
-			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date'):
+			if selected_from_date < actual_from_date.get('from_date'):
 				frappe.throw(_('From and To date should be between WBS Settings Duration'))
 
 	return

@@ -74,7 +74,7 @@ def validate_date(filters):
 			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date') or selected_to_date > actual_to_date.get('to_date') or selected_to_date < actual_from_date.get('from_date'):
 				frappe.throw(_('From and To date should be between WBS Settings Duration'))
 		if actual_from_date.get('from_date') and actual_to_date.get('INFINITE'):
-			if selected_from_date < actual_from_date.get('from_date') or selected_from_date > actual_to_date.get('to_date'):
+			if selected_from_date < actual_from_date.get('from_date'):
 				frappe.throw(_('From and To date should be between WBS Settings Duration'))
 
 	return
@@ -158,7 +158,7 @@ def get_columns():
 		{"label": _("Balance Qty"), "fieldname": "qty_after_transaction", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Incoming Rate"), "fieldname": "incoming_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
-		{"label": _("Valuation Rate"), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 110,
+		{"label": _("Valuation Rate") or selected_from_date > actual_to_date.get('to_date'), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
 		{"label": _("Balance Value"), "fieldname": "stock_value", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency"},
