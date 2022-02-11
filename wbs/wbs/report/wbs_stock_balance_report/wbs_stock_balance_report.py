@@ -155,7 +155,6 @@ def update_wbs_storage_location(data, filters):
 
 	for d in data:
 		if d.get('wbs_storage_location') and d.get('wbs_id'):
-			print(d)
 			rpt.append(d)
 
 	if rpt and len(rpt) > 0:
