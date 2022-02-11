@@ -1,8 +1,6 @@
 // Copyright (c) 2016, yashwanth and contributors
 // For license information, please see license.txt
 /* eslint-disable */
-var to_date;
-var from_date;
 
 frappe.query_reports["WBS Stock Ledger Report"] = {
 	"filters": [

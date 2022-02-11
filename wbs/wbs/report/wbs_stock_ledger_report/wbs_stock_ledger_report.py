@@ -6,7 +6,6 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt
 from datetime import datetime
-import pandas as pd
 from erpnext.stock.utils import update_included_uom_in_report
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date
