@@ -79,11 +79,12 @@ def validate_date(filters):
 
 	return
 
+# Filter to sort the stock ledger report for wbs storage location.
+# EDIT this when specific to WBS Storage location.
 def update_wbs_storage_location(data, filters):
 	rpt = []
 	if data:
 		for d in data:
-			# print("TO FILTER DATA : ",d)
 			if d.get('source_warehouse_storage_location') is not None and d.get('source_warehouse_storage_location'):
 				s_location = frappe.db.sql("""select name, name_of_attribute_id
 									from `tabWBS Storage Location`
