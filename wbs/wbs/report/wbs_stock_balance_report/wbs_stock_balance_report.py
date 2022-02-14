@@ -9,8 +9,8 @@ from erpnext.stock.utils import add_additional_uom_columns
 from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condition
 from datetime import datetime
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
-# from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
-from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
+from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
+# from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
 from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date, get_warehouse
 from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_id
 from six import iteritems
@@ -36,8 +36,8 @@ def execute(filters=None):
 
 	if filters.get('show_stock_ageing_data'):
 		filters['show_warehouse_wise_stock'] = True
-		# item_wise_fifo_queue = FIFOSlots(filters, sle).generate()
-		item_wise_fifo_queue = get_fifo_queue(filters, sle)
+		item_wise_fifo_queue = FIFOSlots(filters, sle).generate()
+		# item_wise_fifo_queue = get_fifo_queue(filters, sle)
 
 	# if no stock ledger entry found return
 	if not sle:
