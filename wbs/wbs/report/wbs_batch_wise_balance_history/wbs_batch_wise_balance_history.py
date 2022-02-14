@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, cint, getdate
+from datetime import datetime
 from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date
 from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_entry_detail, get_id
 
