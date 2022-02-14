@@ -56,6 +56,9 @@ def execute(filters=None):
 						 item_map[item]["stock_uom"]
 					])
 
+	for d in data:
+		if d[3] == '' or d[3] is None:
+			data.remove(d)
 	return columns, data
 
 
