@@ -260,6 +260,7 @@ def get_item_warehouse_map(filters, sle):
 				"out_qty": 0.0, "out_val": 0.0,
 				"bal_qty": 0.0, "bal_val": 0.0,
 				"val_rate": 0.0, "voucher_no": d.voucher_no,
+				"voucher_detail_no": d.voucher_detail_no
 			})
 
 		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
@@ -283,6 +284,7 @@ def get_item_warehouse_map(filters, sle):
 				qty_dict.out_qty += abs(qty_diff)
 				qty_dict.out_val += abs(value_diff)
 		qty_dict.voucher_no = d.voucher_no
+		qty_dict.voucher_detail_no = d.voucher_detail_no
 		qty_dict.val_rate = d.valuation_rate
 		qty_dict.bal_qty += qty_diff
 		qty_dict.bal_val += value_diff
