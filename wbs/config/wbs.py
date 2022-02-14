@@ -54,15 +54,22 @@ def get_data():
 					"is_query_report": True,
 					"name": "WBS Stock Ledger Report",
 					"doctype": "Stock Ledger Entry",
-					"onboard": 1,
+					"onboard": 1
                 },
                 {
                     "type": "report",
 					"is_query_report": True,
 					"name": "WBS Stock Balance Report",
 					"doctype": "Stock Ledger Entry",
-					"onboard": 1,
-                }
+					"onboard": 1
+                },
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "WBS Batch Wise Balance History",
+					"doctype": "Stock Ledger Entry",
+					"onboard": 1
+				}
             ]
         }
 	]
