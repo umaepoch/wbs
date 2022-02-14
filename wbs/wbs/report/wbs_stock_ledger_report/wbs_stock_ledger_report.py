@@ -101,19 +101,19 @@ def update_wbs_storage_location(data, filters):
 				if details:
 					entry_detail.append(details)
 
-	# print("ENTRY DETAIL",entry_detail)
+	print("ENTRY DETAIL",entry_detail)
 	if entry_detail:
 		for e in entry_detail:
 			for d in data:
 				if e.get('parent') == d.get('voucher_no'):
-					if warehouse == e.get('s_warehouse'):
+					if warehouse == e.get('s_warehouse') and d.get('item_code') == e.get('item_code'):
 						id = get_id(e.get('source_warehouse_storage_location'))
 						if id:
 							d.update({
 								'wbs_storage_location': e.get('source_warehouse_storage_location'),
 								'wbs_id': id
 							})
-					if warehouse == e.get('t_warehouse'):
+					if warehouse == e.get('t_warehouse') and d.get('item_code') == e.get('item_code'):
 						id = get_id(e.get('target_warehouse_storage_location'))
 						if id:
 							d.update({
