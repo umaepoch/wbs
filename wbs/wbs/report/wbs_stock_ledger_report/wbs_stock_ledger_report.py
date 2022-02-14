@@ -8,8 +8,8 @@ from frappe.utils import cint, flt
 from datetime import datetime
 from erpnext.stock.utils import update_included_uom_in_report
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
-from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date
-from wbs.wbs.doctype.wbs_settings.wbs_settings import get_end_date
+from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date, get_warehouse
+from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_id
 
 def execute(filters=None):
 	include_uom = filters.get("include_uom")
@@ -28,8 +28,6 @@ def execute(filters=None):
 	actual_qty = stock_value = 0
 
 	validate_date(filters)
-	if filters.get('wbs_settings'):
-		sl_entries = update_wbs_storage_location(sl_entries, filters)
 
 	available_serial_nos = {}
 	for sle in sl_entries:
@@ -60,6 +58,9 @@ def execute(filters=None):
 
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 
+	if filters.get('wbs_settings'):
+		data = update_wbs_storage_location(data, filters)
+
 	return columns, data
 
 
@@ -83,43 +84,47 @@ def validate_date(filters):
 # EDIT this when specific to WBS Storage location.
 def update_wbs_storage_location(data, filters):
 	rpt = []
+	entry_detail = []
+
+	warehouse = get_warehouse(filters.get('wbs_settings')).get('warehouse') if get_warehouse(filters.get('wbs_settings')).get('warehouse') else False
+	ID = filters.get('wbs_settings')
+
+	if ID:
+		# Fetches list of all the WBS Storage Locations for the selected WBS Settings ID.
+		locations = get_storage_location(ID)
+
 	if data:
 		for d in data:
-			if d.get('source_warehouse_storage_location') is not None and d.get('source_warehouse_storage_location'):
-				s_location = frappe.db.sql("""select name, name_of_attribute_id
-									from `tabWBS Storage Location`
-									where wbs_settings_id=%s and name=%s and is_group='0'""",
-									(filters.get('wbs_settings'), d.get('source_warehouse_storage_location')),
-									as_dict=1)
+			if d.get('voucher_no') and warehouse:
+				# Fetches the Stock Entry Details for WBS Transaction by VOUCHER_NO.
+				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'))
+				if details:
+					entry_detail.append(details)
 
-				if s_location and s_location is not None:
-					for l in s_location:
-						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+	# print("ENTRY DETAIL",entry_detail)
+	if entry_detail:
+		for e in entry_detail:
+			for d in data:
+				if e.get('parent') == d.get('voucher_no'):
+					if warehouse == e.get('s_warehouse'):
+						id = get_id(e.get('source_warehouse_storage_location'))
+						if id:
 							d.update({
-							'wbs_storage_location': l.get('name'),
-							'wbs_id': l.get('name_of_attribute_id')
+								'wbs_storage_location': e.get('source_warehouse_storage_location'),
+								'wbs_id': id
 							})
-			if d.get('target_warehouse_storage_location') is not None and d.get('target_warehouse_storage_location'):
-				t_location = frappe.db.sql("""select name, name_of_attribute_id
-									from `tabWBS Storage Location`
-									where wbs_settings_id=%s and name=%s and is_group='0'""",
-									(filters.get('wbs_settings'), d.get('target_warehouse_storage_location')),
-									as_dict=1)
-				if t_location and t_location is not None:
-					for l in t_location:
-						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+					if warehouse == e.get('t_warehouse'):
+						id = get_id(e.get('target_warehouse_storage_location'))
+						if id:
 							d.update({
-							'wbs_storage_location': l.get('name'),
-							'wbs_id': l.get('name_of_attribute_id')
+								'wbs_storage_location': e.get('target_warehouse_storage_location'),
+								'wbs_id': id
 							})
-
 	for d in data:
-		if d.get('wbs_storage_location') and d.get('wbs_id'):
-			rpt.append(d)
+		if d.get('voucher_no') and d.get('wbs_storage_location') and d.get('wbs_id'):
+			rpt.append(d);
 
-	if rpt and len(rpt) > 0:
-		return rpt
-	return data
+	return rpt
 
 def update_available_serial_nos(available_serial_nos, sle):
 	serial_nos = get_serial_nos(sle.serial_no)
@@ -158,7 +163,7 @@ def get_columns():
 		{"label": _("Balance Qty"), "fieldname": "qty_after_transaction", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Incoming Rate"), "fieldname": "incoming_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
-		{"label": _("Valuation Rate") or selected_from_date > actual_to_date.get('to_date'), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 110,
+		{"label": _("Valuation Rate"), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
 		{"label": _("Balance Value"), "fieldname": "stock_value", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency"},
@@ -181,12 +186,9 @@ def get_stock_ledger_entries(filters, items):
 			.format(', '.join([frappe.db.escape(i) for i in items]))
 
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
-			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction,
-			sed.source_warehouse_storage_location, sed.target_warehouse_storage_location, sle.incoming_rate, sle.valuation_rate,
+			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference
 		from `tabStock Ledger Entry` as sle
-		join `tabStock Entry` as se on se.name = sle.voucher_no
-		join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
 		where sle.company = %(company)s and
 			sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}

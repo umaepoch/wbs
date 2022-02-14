@@ -198,3 +198,41 @@ def check_item_already_exist(item_code, ID):
 		return False
 	except Exception as ex:
 		return {'EX': ex}
+
+
+def get_storage_location(ID):
+	locations = []
+	if ID:
+		strg = frappe.db.sql("""select name from `tabWBS Storage Location` where wbs_settings_id=%s and is_group='0'""", ID, as_dict = 1)
+
+		if strg:
+			for s in strg:
+				if s.get('name'):
+					locations.append(s.get('name'))
+
+	if locations:
+		return locations
+	return False
+
+def get_entry_detail(voucher_no, warehouse, item_code):
+	details = []
+	if voucher_no:
+		sel = frappe.db.sql("""select sed.parent, sed.item_code, sed.s_warehouse, sed.t_warehouse, sed.source_warehouse_storage_location, sed.target_warehouse_storage_location
+							from `tabStock Entry Detail` as sed
+							where (parent = %s and item_code = %s)
+							and (s_warehouse = %s or t_warehouse = %s)""",
+							(voucher_no, item_code, warehouse, warehouse),
+							as_dict = 1)
+		if sel:
+			for s in sel:
+				if s.get('parent'):
+					return s
+	return False
+
+def get_id(ID):
+	if ID:
+		ids = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location` where name = %s and is_group = '0'""", ID, as_dict = 1)
+
+		if ids and len(ids) == 1:
+			return ids[len(ids) - len(ids)].name_of_attribute_id
+	return False

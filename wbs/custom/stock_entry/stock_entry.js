@@ -234,7 +234,7 @@ frappe.ui.form.on("Stock Entry Detail", {
             }
           } else if (!t_loc && !s_loc) {
             let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
-
+            console.log(previous)
             if (previous) {
               doc.target_warehouse_storage_location = previous.strg_loc;
               let id = get_strg_id(previous.strg_loc)
@@ -243,7 +243,7 @@ frappe.ui.form.on("Stock Entry Detail", {
             }
 
             let sprevious = get_previous_transaction("SOURCE",frm.doc.posting_date, doc.s_warehouse, doc.item_code)
-
+            console.log(sprevious)
             if (sprevious) {
               doc.source_warehouse_storage_location = sprevious.strg_loc;
               let id = get_strg_id(sprevious.strg_loc)
@@ -490,7 +490,7 @@ frappe.ui.form.on('Stock Entry', {
               }
             } else {
               let last_transaction = get_previous_transaction("SOURCE",frm.doc.posting_date, child['s_warehouse'], child['item_code'])
-
+              // console.log(last_transaction)
               if (last_transaction.length > 0) {
 
                 return {
@@ -501,6 +501,7 @@ frappe.ui.form.on('Stock Entry', {
               }
 
               let name = get_storage_location(frm.doc.posting_date, child['s_warehouse'])
+              console.log(name)
 
               if (name.length > 0) {
                 return {

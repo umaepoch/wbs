@@ -9,10 +9,10 @@ from erpnext.stock.utils import add_additional_uom_columns
 from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condition
 from datetime import datetime
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
-from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date
-from wbs.wbs.doctype.wbs_settings.wbs_settings import get_end_date
 from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
 # from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
+from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date, get_warehouse
+from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_id
 from six import iteritems
 
 def execute(filters=None):
@@ -122,44 +122,47 @@ def validate_date(filters):
 # EDIT this when specific to WBS Storage location.
 def update_wbs_storage_location(data, filters):
 	rpt = []
+	entry_detail = []
+
+	warehouse = get_warehouse(filters.get('wbs_settings')).get('warehouse') if get_warehouse(filters.get('wbs_settings')).get('warehouse') else False
+	ID = filters.get('wbs_settings')
+
+	if ID:
+		# Fetches list of all the WBS Storage Locations for the selected WBS Settings ID.
+		locations = get_storage_location(ID)
+
 	if data:
 		for d in data:
-			if d.get('source_warehouse_storage_location') is not None and d.get('source_warehouse_storage_location'):
-				s_location = frappe.db.sql("""select name, name_of_attribute_id
-									from `tabWBS Storage Location`
-									where wbs_settings_id=%s and name=%s and is_group='0'""",
-									(filters.get('wbs_settings'), d.get('source_warehouse_storage_location')),
-									as_dict=1)
+			if d.get('voucher_no') and warehouse:
+				# Fetches the Stock Entry Details for WBS Transaction by VOUCHER_NO.
+				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'))
+				if details:
+					entry_detail.append(details)
 
-				if s_location and s_location is not None:
-					for l in s_location:
-						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+	# print("ENTRY DETAIL",entry_detail)
+	if entry_detail:
+		for e in entry_detail:
+			for d in data:
+				if e.get('parent') == d.get('voucher_no'):
+					if warehouse == e.get('s_warehouse'):
+						id = get_id(e.get('source_warehouse_storage_location'))
+						if id:
 							d.update({
-							'wbs_storage_location': l.get('name'),
-							'wbs_id': l.get('name_of_attribute_id')
+								'wbs_storage_location': e.get('source_warehouse_storage_location'),
+								'wbs_id': id
 							})
-			if d.get('target_warehouse_storage_location') is not None and d.get('target_warehouse_storage_location'):
-				t_location = frappe.db.sql("""select name, name_of_attribute_id
-									from `tabWBS Storage Location`
-									where wbs_settings_id=%s and name=%s and is_group='0'""",
-									(filters.get('wbs_settings'), d.get('target_warehouse_storage_location')),
-									as_dict=1)
-				if t_location and t_location is not None:
-					for l in t_location:
-						if l.get('name') is not None and l.get('name_of_attribute_id') is not None:
+					if warehouse == e.get('t_warehouse'):
+						id = get_id(e.get('target_warehouse_storage_location'))
+						if id:
 							d.update({
-							'wbs_storage_location': l.get('name'),
-							'wbs_id': l.get('name_of_attribute_id')
+								'wbs_storage_location': e.get('target_warehouse_storage_location'),
+								'wbs_id': id
 							})
-
-
 	for d in data:
-		if d.get('wbs_storage_location') and d.get('wbs_id'):
-			rpt.append(d)
+		if d.get('voucher_no') and d.get('wbs_storage_location') and d.get('wbs_id'):
+			rpt.append(d);
 
-	if rpt and len(rpt) > 0:
-		return rpt
-	return data
+	return rpt
 
 def get_columns(filters):
 	"""return columns"""
@@ -232,14 +235,11 @@ def get_stock_ledger_entries(filters, items):
 
 	return frappe.db.sql("""
 		select
-			sle.item_code, warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
-			sed.source_warehouse_storage_location, sed.target_warehouse_storage_location,
+			sle.item_code, sle.warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference,
 			sle.item_code as name, sle.voucher_no, sle.stock_value
 		from
 			`tabStock Ledger Entry` as sle force index (posting_sort_index)
-			join `tabStock Entry` as se on se.name = sle.voucher_no
-			join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
 		where sle.docstatus < 2 %s %s
 		order by sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty""" % #nosec
 		(item_conditions_sql, conditions), as_dict=1)
@@ -260,8 +260,6 @@ def get_item_warehouse_map(filters, sle):
 				"out_qty": 0.0, "out_val": 0.0,
 				"bal_qty": 0.0, "bal_val": 0.0,
 				"val_rate": 0.0, "voucher_no": d.voucher_no,
-				"source_warehouse_storage_location": d.source_warehouse_storage_location if d.source_warehouse_storage_location else '',
-				"target_warehouse_storage_location": d.target_warehouse_storage_location if d.target_warehouse_storage_location else ''
 			})
 
 		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
@@ -285,8 +283,6 @@ def get_item_warehouse_map(filters, sle):
 				qty_dict.out_qty += abs(qty_diff)
 				qty_dict.out_val += abs(value_diff)
 		qty_dict.voucher_no = d.voucher_no
-		qty_dict.source_warehouse_storage_location = d.source_warehouse_storage_location if d.source_warehouse_storage_location else ''
-		qty_dict.target_warehouse_storage_location = d.target_warehouse_storage_location if d.target_warehouse_storage_location else ''
 		qty_dict.val_rate = d.valuation_rate
 		qty_dict.bal_qty += qty_diff
 		qty_dict.bal_val += value_diff
@@ -301,7 +297,7 @@ def filter_items_with_no_transactions(iwb_map, float_precision):
 
 		no_transactions = True
 		for key, val in iteritems(qty_dict):
-			if key != 'source_warehouse_storage_location' and key != 'target_warehouse_storage_location' and key != 'voucher_no':
+			if key != 'voucher_no':
 				val = flt(val, float_precision)
 				qty_dict[key] = val
 				if key != "val_rate" and val:
