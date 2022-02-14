@@ -101,7 +101,6 @@ def update_wbs_storage_location(data, filters):
 				if details:
 					entry_detail.append(details)
 
-	print("ENTRY DETAIL",entry_detail)
 	if entry_detail:
 		for e in entry_detail:
 			for d in data:

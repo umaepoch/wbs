@@ -9,8 +9,8 @@ from erpnext.stock.utils import add_additional_uom_columns
 from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condition
 from datetime import datetime
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
-from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
-# from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
+# from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
+from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
 from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date, get_warehouse
 from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_id
 from six import iteritems
@@ -36,8 +36,8 @@ def execute(filters=None):
 
 	if filters.get('show_stock_ageing_data'):
 		filters['show_warehouse_wise_stock'] = True
-		item_wise_fifo_queue = FIFOSlots(filters, sle).generate()
-		# item_wise_fifo_queue = get_fifo_queue(filters, sle)
+		# item_wise_fifo_queue = FIFOSlots(filters, sle).generate()
+		item_wise_fifo_queue = get_fifo_queue(filters, sle)
 
 	# if no stock ledger entry found return
 	if not sle:
@@ -139,7 +139,6 @@ def update_wbs_storage_location(data, filters):
 				if details:
 					entry_detail.append(details)
 
-	# print("ENTRY DETAIL",entry_detail)
 	if entry_detail:
 		for e in entry_detail:
 			for d in data:
@@ -172,6 +171,7 @@ def get_columns(filters):
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("WBS Storage Location"), "fieldname": "wbs_storage_location", "fieldtype": "Link", "options": "WBS Storage Location", "width": 150},
 		{"label": _("WBS ID"), "fieldname": "wbs_id", "width":150},
+		{"label": _("Voucher #"), "fieldname": "voucher_no", "fieldtype": "Dynamic Link", "options": "voucher_type", "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
 		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
@@ -299,7 +299,7 @@ def filter_items_with_no_transactions(iwb_map, float_precision):
 
 		no_transactions = True
 		for key, val in iteritems(qty_dict):
-			if key != 'voucher_no':
+			if key != 'voucher_no' and key != 'voucher_detail_no':
 				val = flt(val, float_precision)
 				qty_dict[key] = val
 				if key != "val_rate" and val:
