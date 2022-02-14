@@ -97,7 +97,7 @@ def update_wbs_storage_location(data, filters):
 		for d in data:
 			if d.get('voucher_no') and warehouse:
 				# Fetches the Stock Entry Details for WBS Transaction by VOUCHER_NO.
-				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'))
+				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'), d.get('voucher_detail_no'))
 				if details:
 					entry_detail.append(details)
 
@@ -105,7 +105,7 @@ def update_wbs_storage_location(data, filters):
 	if entry_detail:
 		for e in entry_detail:
 			for d in data:
-				if e.get('parent') == d.get('voucher_no'):
+				if e.get('parent') == d.get('voucher_no') and e.get('name') == d.get('voucher_detail_no'):
 					if warehouse == e.get('s_warehouse') and d.get('item_code') == e.get('item_code'):
 						id = get_id(e.get('source_warehouse_storage_location'))
 						if id:
@@ -187,7 +187,7 @@ def get_stock_ledger_entries(filters, items):
 
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
 			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference
+			sle.stock_value, sle.voucher_type, sle.voucher_no,sle.voucher_detail_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference
 		from `tabStock Ledger Entry` as sle
 		where sle.company = %(company)s and
 			sle.posting_date between %(from_date)s and %(to_date)s

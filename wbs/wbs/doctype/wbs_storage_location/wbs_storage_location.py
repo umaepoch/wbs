@@ -214,14 +214,14 @@ def get_storage_location(ID):
 		return locations
 	return False
 
-def get_entry_detail(voucher_no, warehouse, item_code):
+def get_entry_detail(voucher_no, warehouse, item_code, voucher_detail_no):
 	details = []
 	if voucher_no:
-		sel = frappe.db.sql("""select sed.parent, sed.item_code, sed.s_warehouse, sed.t_warehouse, sed.source_warehouse_storage_location, sed.target_warehouse_storage_location
+		sel = frappe.db.sql("""select sed.parent, sed.name, sed.item_code, sed.s_warehouse, sed.t_warehouse, sed.source_warehouse_storage_location, sed.target_warehouse_storage_location
 							from `tabStock Entry Detail` as sed
-							where (parent = %s and item_code = %s)
-							and (s_warehouse = %s or t_warehouse = %s)""",
-							(voucher_no, item_code, warehouse, warehouse),
+							where (sed.parent = %s and sed.item_code = %s) and sed.name = %s
+							and (sed.s_warehouse = %s or sed.t_warehouse = %s)""",
+							(voucher_no, item_code, voucher_detail_no, warehouse, warehouse),
 							as_dict = 1)
 		if sel:
 			for s in sel:

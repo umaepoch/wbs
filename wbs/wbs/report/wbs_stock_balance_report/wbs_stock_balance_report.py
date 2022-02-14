@@ -135,7 +135,7 @@ def update_wbs_storage_location(data, filters):
 		for d in data:
 			if d.get('voucher_no') and warehouse:
 				# Fetches the Stock Entry Details for WBS Transaction by VOUCHER_NO.
-				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'))
+				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'), d.get('voucher_detail_no'))
 				if details:
 					entry_detail.append(details)
 
@@ -143,7 +143,7 @@ def update_wbs_storage_location(data, filters):
 	if entry_detail:
 		for e in entry_detail:
 			for d in data:
-				if e.get('parent') == d.get('voucher_no'):
+				if e.get('parent') == d.get('voucher_no') and e.get('name') == d.get('voucher_detail_no'):
 					if warehouse == e.get('s_warehouse') and d.get('item_code') == e.get('item_code'):
 						id = get_id(e.get('source_warehouse_storage_location'))
 						if id:
@@ -237,7 +237,7 @@ def get_stock_ledger_entries(filters, items):
 		select
 			sle.item_code, sle.warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference,
-			sle.item_code as name, sle.voucher_no, sle.stock_value
+			sle.item_code as name, sle.voucher_no,sle.voucher_detail_no, sle.stock_value
 		from
 			`tabStock Ledger Entry` as sle force index (posting_sort_index)
 		where sle.docstatus < 2 %s %s
