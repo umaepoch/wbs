@@ -4,11 +4,6 @@
 // display link fields based on warehouse.
 frappe.ui.form.on("Stock Entry Detail", {
   form_render: (frm, cdt, cdn) => {
-    let doc = locals[cdt][cdn];
-
-    // if (!frm.doc.stock_entry_type) {
-    //   frappe.throw(__(`Please select Stock Entry Type before adding Items.`))
-    // }
 
     if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Issue') {
 
@@ -16,21 +11,20 @@ frappe.ui.form.on("Stock Entry Detail", {
         let s_wbs = is_wbs(doc.s_warehouse)
 
         if (s_wbs) {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 0
-          // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 0;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+          wrapper.show()
           frm.refresh_field('items')
         } else {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 1
-          // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 1;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+          wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-        df.hidden = 1
-        // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 1;
-        // cur_frm.fields_dict.source_warehouse_storage_location.grid.set_column_disp()
+        var doc = locals[cdt][cdn]
+        var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+        wrapper.hide()
         frm.refresh_field('items')
       }
     }
@@ -41,20 +35,20 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 0
-          // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 0;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+          wrapper.show()
           frm.refresh_field('items')
         } else {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 1
-          // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 1;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+          wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-        df.hidden = 1
-        // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 1;
+        var doc = locals[cdt][cdn]
+        var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+        wrapper.hide()
         frm.refresh_field('items')
       }
     }
@@ -76,25 +70,22 @@ frappe.ui.form.on("Stock Entry Detail", {
 
       if (doc.t_warehouse) {
         let t_wbs = is_wbs(doc.t_warehouse)
-        console.log(t_wbs)
 
         if (t_wbs) {
-          console.log('unhide')
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 0
-          // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 0;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+          wrapper.show()
           frm.refresh_field('items')
         } else {
-          console.log('hide')
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 1
-          // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 1;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+          wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var df = frappe.meta.get_docfield("Stock Entry Detail", "target_warehouse_storage_location", cur_frm.doc.name);
-        df.hidden = 1
-        // cur_frm.fields_dict.items.grid.fields_map.target_warehouse_storage_location.hidden = 1;
+        var doc = locals[cdt][cdn]
+        var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
+        wrapper.hide()
         frm.refresh_field('items')
       }
     }
@@ -108,20 +99,20 @@ frappe.ui.form.on("Stock Entry Detail", {
         let s_wbs = is_wbs(doc.s_warehouse)
 
         if (s_wbs) {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 0
-          // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 0;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+          wrapper.show()
           frm.refresh_field('items')
         } else {
-          var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-          df.hidden = 1
-          // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 1;
+          var doc = locals[cdt][cdn]
+          var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+          wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var df = frappe.meta.get_docfield("Stock Entry Detail", "source_warehouse_storage_location", cur_frm.doc.name);
-        df.hidden = 1
-        // cur_frm.fields_dict.items.grid.fields_map.source_warehouse_storage_location.hidden = 1;
+        var doc = locals[cdt][cdn]
+        var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
+        wrapper.hide()
         frm.refresh_field('items')
       }
 
