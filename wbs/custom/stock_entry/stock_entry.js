@@ -4,6 +4,7 @@
 // display link fields based on warehouse.
 frappe.ui.form.on("Stock Entry Detail", {
   form_render: (frm, cdt, cdn) => {
+    let doc = locals[cdt][cdn]
 
     if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Issue') {
 
@@ -11,18 +12,15 @@ frappe.ui.form.on("Stock Entry Detail", {
         let s_wbs = is_wbs(doc.s_warehouse)
 
         if (s_wbs) {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
           wrapper.show()
           frm.refresh_field('items')
         } else {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
           wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var doc = locals[cdt][cdn]
         var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
         wrapper.hide()
         frm.refresh_field('items')
@@ -35,18 +33,15 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
           wrapper.show()
           frm.refresh_field('items')
         } else {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
           wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var doc = locals[cdt][cdn]
         var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
         wrapper.hide()
         frm.refresh_field('items')
@@ -72,18 +67,15 @@ frappe.ui.form.on("Stock Entry Detail", {
         let t_wbs = is_wbs(doc.t_warehouse)
 
         if (t_wbs) {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
           wrapper.show()
           frm.refresh_field('items')
         } else {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
           wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var doc = locals[cdt][cdn]
         var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['source_warehouse_storage_location'].$wrapper
         wrapper.hide()
         frm.refresh_field('items')
@@ -99,18 +91,15 @@ frappe.ui.form.on("Stock Entry Detail", {
         let s_wbs = is_wbs(doc.s_warehouse)
 
         if (s_wbs) {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
           wrapper.show()
           frm.refresh_field('items')
         } else {
-          var doc = locals[cdt][cdn]
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
           wrapper.hide()
           frm.refresh_field('items')
         }
       } else {
-        var doc = locals[cdt][cdn]
         var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
         wrapper.hide()
         frm.refresh_field('items')
