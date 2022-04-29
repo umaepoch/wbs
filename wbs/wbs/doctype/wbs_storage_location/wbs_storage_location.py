@@ -14,7 +14,7 @@ def get_attributes(id):
 	try:
 		atr_list = frappe.db.sql("""select attribute_level, attribute_name from `tabWBS Attributes`
 								where parent=%s""", (id), as_dict=1)
-
+		print("get attributes id", atr_list)
 		return {"SC": True, 'attrs': atr_list}
 	except Exception as ex:
 		return {"EX": ex}
@@ -25,7 +25,7 @@ def get_attribute_name(id, lv):
 	try:
 		name = frappe.db.sql("""select attribute_name from `tabWBS Attributes`
 							where parent=%s and attribute_level=%s""", (id, lv), as_dict = 1);
-
+		print("get attribute name", name)
 		return {'name': name[0].attribute_name}
 	except Exception as ex:
 		return {"EX" : ex}
@@ -35,7 +35,7 @@ def get_attribute_name(id, lv):
 def get_refer_by(id):
 	try:
 		refer_by = frappe.db.sql("""select refer_by from `tabWBS Attributes` where parent=%s and attribute_level=%s""", (id, str(1)), as_dict = 1)
-
+		print("refer by", refer_by)
 		if refer_by and len(refer_by) > 0:
 			return {'refer_by': refer_by[len(refer_by) - 1].refer_by}
 		return False
@@ -47,7 +47,7 @@ def get_refer_by(id):
 def get_refer_by2(id, lvl):
 	try:
 		refer_by = frappe.db.sql("""select refer_by from `tabWBS Attributes` where parent=%s and attribute_level=%s""", (id, lvl), as_dict = 1);
-
+		print("get refer by2", refer_by)
 		if refer_by and len(refer_by) > 0:
 			return {'refer_by': refer_by[len(refer_by) - 1].refer_by}
 		return False
@@ -60,7 +60,7 @@ def generate_idlv1(id, parent_attribute):
 	try:
 		list = frappe.db.sql("""select count(parent_attribute) as id_count from `tabWBS Storage Location`
 							where wbs_settings_id = %s and parent_attribute = %s""", (id, parent_attribute), as_dict=1);
-
+		print("generate idlv1", list)
 		return {'parent_list': list}
 	except Exception as ex:
 		return {'EX':ex}
@@ -72,7 +72,7 @@ def get_parents(id, lvl):
 		list = frappe.db.sql("""select attribute_id, attribute from `tabWBS Storage Location`
 							where wbs_settings_id = %s and attribute_level = %s
 							order by attribute_id""", (id, lvl), as_dict=1)
-
+		print("get parents", list)
 		return {'parent_list': list}
 	except Exception as ex:
 		return {'EX': ex}
@@ -84,7 +84,7 @@ def generate_ids(id, parent_attribute):
 	try:
 		list = frappe.db.sql("""select count(parent_attribute) as id_count from `tabWBS Storage Location`
 							where wbs_settings_id = %s and parent_attribute = %s""", (id, parent_attribute), as_dict=1);
-
+		print("generate id", list)
 		if list and len(list) > 0:
 
 			if list[len(list) - 1].id_count >= 0:
@@ -114,7 +114,7 @@ def generate_records_of_name(id, lvl, atr_name):
 		list = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location`
 							where wbs_settings_id = %s and attribute_level = %s and attribute=%s""",
 							(id, lvl, atr_name), as_dict = 1);
-		print(list)
+		print("generate record name", list)
 		if list and len(list) > 0:
 			if list[len(list) - 1].name_of_attribute_id:
 				return {'Name': list[len(list) - 1].name_of_attribute_id}
@@ -130,7 +130,7 @@ def generate_records_of_id(id, lvl, atr_id):
 		list = frappe.db.sql("""select name_of_attribute_id from `tabWBS Storage Location`
 							where wbs_settings_id = %s and attribute_level = %s and attribute_id = %s""",
 							(id, lvl, atr_id), as_dict = 1);
-		print(list)
+		print("generate record id", list)
 		if list and len(list) > 0:
 			if list[len(list) - 1].name_of_attribute_id:
 				return {'ID': list[len(list) - 1].name_of_attribute_id}
@@ -147,7 +147,7 @@ def get_specific_items(location):
 							where twsl.is_group='0' and twsl.storage_location_can_store = 'Specific Items' and twsi.parent = %s""",
 							location, as_dict=1);
 
-		print(list)
+		print("specific item", list)
 		if list and len(list) > 0:
 			return {'list': list}
 		return False
@@ -164,7 +164,7 @@ def get_nearest_loc_with_item(date, item_code, warehouse):
 							and (tws.start_date <= %s and twsi.item_code = %s)
 							and (twsl.storage_location_can_store = 'Specific Items' and twsl.is_group = '0')
 							order by start_date desc""",(warehouse, warehouse, date, item_code), as_dict = 1);
-
+		print("nearest location with item", list)
 		if list and len(list) == 1:
 			return {'location': list[len(list) - 1].name}
 		return False
@@ -228,6 +228,47 @@ def get_entry_detail(voucher_no, warehouse, item_code, voucher_detail_no):
 				if s.get('parent'):
 					return s
 	return False
+
+# BMGA yuvabe
+def get_sales_invoice(voucher_no, warehouse, item_code, voucher_detail_no, ID):
+	print(voucher_no)
+	if voucher_no:
+		sel = frappe.db.sql(
+			"""select sle.voucher_no as parent, sle.voucher_detail_no as name, sle.item_code, sle.warehouse
+			from `tabStock Ledger Entry` as sle
+			where sle.voucher_no = %s and sle.item_code = %s and sle.voucher_detail_no = %s
+			and sle.warehouse = %s and sle.docstatus < 2 and qty_after_transaction > 0""",
+			(voucher_no, item_code, voucher_detail_no, warehouse),
+			as_dict=1
+		)
+
+		entry_detail = get_nearest_entry_for_sales_invoice(item_code, ID)
+
+		if sel:
+			for s in sel:
+				if s.get('parent'):
+					if len(entry_detail) > 0:
+						if entry_detail[0].get("target_warehouse_storage_location"):
+							s["warehouse_storage_location"] = entry_detail[0]["target_warehouse_storage_location"]
+						if entry_detail[0].get("source_warehouse_storage_location"):
+							s["source_warehouse_storage_location"] = entry_detail[0]["source_warehouse_storage_location"]
+				return s
+	return False
+
+# BMGA yuvabe
+def get_nearest_entry_for_sales_invoice(item_code, id):
+	detail = frappe.db.sql(
+		"""select sed.target_warehouse_storage_location, sed.source_warehouse_storage_location
+		from `tabStock Entry Detail` as sed
+			join `tabWBS Storage Location` as sl
+				on (sed.target_warehouse_storage_location = sl.name or sed.source_warehouse_storage_location = sl.name)
+		where sed.item_code = %s and sl.wbs_settings_id = %s and sed.docstatus < 2
+		order by sed.modified""",
+		(item_code, id),
+		as_dict=1
+	)
+
+	return detail
 
 def get_id(ID):
 	if ID:

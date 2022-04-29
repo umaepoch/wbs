@@ -28,7 +28,7 @@ def get_nearest_settings_id(transaction_date, warehouse):
 							join `tabWBS Storage Location` as twsl on twsl.wbs_settings_id = tws.name
 							where tws.warehouse=%s and tws.start_date<=%s and twsl.is_group = '0'
 							order by tws.start_date desc""", (warehouse, transaction_date), as_dict=1);
-		print(list)
+		print("nearest settings", list)
 
 		if list and len(list) > 0:
 			return {'list': list}
@@ -42,7 +42,7 @@ def is_wbs(warehouse):
 	try:
 		list = frappe.db.sql("""select is_wbs_active from `tabWarehouse` where name = %s""", warehouse, as_dict = 1)
 
-		print(list)
+		print("is wbs", list)
 		if list and len(list):
 			if list[len(list) - 1].is_wbs_active == 1:
 				return {'is_wbs_active': 1}
@@ -64,7 +64,7 @@ def get_relative_settings(transaction_date, warehouse, item_code):
 							and (twsl.storage_location_can_store = 'Specific Items' and twsl.is_group = '0')""",
 							(transaction_date, warehouse, warehouse, item_code), as_dict =1);
 
-		print(list)
+		print("relative settings", list)
 
 		if list and len(list) > 0:
 			return {'list': list}
@@ -181,24 +181,30 @@ def get_storage_location(date, warehouse):
 							where (tws.start_date<=%s and tws.warehouse = %s)
 							and (twsl.rarb_warehouse = %s)
 							and (twsl.storage_location_can_store = 'Any Items' and twsl.is_group = '0')""", (date, warehouse, warehouse),as_dict = 1)
-		print(list)
+		print("storage location", list)
 		if list and len(list) > 0:
 			return {"list": list}
 		return False
 	except Exception as ex:
 		return {'EX': ex}
 
-
+# bmga yuvabe added changes to where clause (and sed.item_code = item_code)
 @frappe.whitelist()
 def get_previous_transaction(type, date, warehouse, item_code):
+	print("item_code", item_code)
+	print("date", date)
+	print("type", type)
+	print("warehouse", warehouse)
 	try:
 		list = frappe.db.sql("""select sle.voucher_no, sle.item_code, sle.qty_after_transaction, sed.s_warehouse, sed.t_warehouse, sed.target_warehouse_storage_location, sed.source_warehouse_storage_location
 							from `tabStock Ledger Entry` as sle
 							join `tabStock Entry` as se on se.name = sle.voucher_no
 							join `tabStock Entry Detail` as sed on sed.parent = sle.voucher_no
-							where sle.warehouse = %s and sle.item_code = %s and sle.posting_date <= %s
-							order by DATE(sle.posting_date) desc, sle.posting_time desc""", (warehouse, item_code, date), as_dict = 1)
-
+							where sle.warehouse = %s and sle.item_code = %s and sle.posting_date <= %s and sed.item_code = %s
+							order by DATE(sle.posting_date) desc, sle.posting_time desc""", (warehouse, item_code, date, item_code), as_dict = 1)
+		print("previous transaction")
+		for l in list:
+			print(l["item_code"], l["voucher_no"], l["target_warehouse_storage_location"], l["source_warehouse_storage_location"], l["s_warehouse"])
 		if list:
 			transaction = list[len(list) - len(list)]
 			if type == 'TARGET':
