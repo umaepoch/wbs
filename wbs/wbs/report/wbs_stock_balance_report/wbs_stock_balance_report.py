@@ -12,7 +12,7 @@ from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
 # from erpnext.stock.report.stock_ageing.stock_ageing import get_fifo_queue, get_average_age
 from wbs.wbs.doctype.wbs_settings.wbs_settings import get_start_date, get_end_date, get_warehouse
-from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_id
+from wbs.wbs.doctype.wbs_storage_location.wbs_storage_location import get_storage_location, get_entry_detail, get_sales_invoice, get_id
 from six import iteritems
 
 def execute(filters=None):
@@ -33,10 +33,14 @@ def execute(filters=None):
 	columns = get_columns(filters)
 	items = get_items(filters)
 	sle = get_stock_ledger_entries(filters, items)
+	print("*" * 40)
+	for data in sle:
+		print(data)
 
 	if filters.get('show_stock_ageing_data'):
 		filters['show_warehouse_wise_stock'] = True
 		item_wise_fifo_queue = FIFOSlots(filters, sle).generate()
+		print("fifo slots", item_wise_fifo_queue)
 		# item_wise_fifo_queue = get_fifo_queue(filters, sle)
 
 	# if no stock ledger entry found return
@@ -44,8 +48,14 @@ def execute(filters=None):
 		return columns, []
 
 	iwb_map = get_item_warehouse_map(filters, sle)
+	print("*" * 60)
+	print(iwb_map)
 	item_map = get_item_details(items, sle, filters)
+	print("*"*80)
+	print(item_map)
 	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
+	print("*"*10)
+	print(item_reorder_detail_map)
 	data = []
 	conversion_factors = {}
 
@@ -94,10 +104,19 @@ def execute(filters=None):
 
 			data.append(report_data)
 
+	print("*" * 120)
+	for d in data:
+		print(d)
+		print()
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
 
 	if filters.get('wbs_settings'):
 		data = update_wbs_storage_location(data, filters)
+
+	print("*" * 120)
+	for d in data:
+		print(d)
+		print()
 	return columns, data
 
 
@@ -127,6 +146,8 @@ def update_wbs_storage_location(data, filters):
 	warehouse = get_warehouse(filters.get('wbs_settings')).get('warehouse') if get_warehouse(filters.get('wbs_settings')).get('warehouse') else False
 	ID = filters.get('wbs_settings')
 
+	print("!" * 150, warehouse, ID)
+
 	if ID:
 		# Fetches list of all the WBS Storage Locations for the selected WBS Settings ID.
 		locations = get_storage_location(ID)
@@ -136,8 +157,23 @@ def update_wbs_storage_location(data, filters):
 			if d.get('voucher_no') and warehouse:
 				# Fetches the Stock Entry Details for WBS Transaction by VOUCHER_NO.
 				details = get_entry_detail(d.get('voucher_no'), warehouse, d.get('item_code'), d.get('voucher_detail_no'))
+				print("entry detail", details)
 				if details:
 					entry_detail.append(details)
+				# bmga yuvabe
+				else:
+					print("NEED TO FETCH FROM STOCK LEDGER ITSLEF")
+					sales_invoice_details = get_sales_invoice(d.get('voucher_no'), warehouse, d.get('item_code'), d.get('voucher_detail_no'), ID)
+					print(sales_invoice_details)
+					if sales_invoice_details:
+						entry_detail.append(sales_invoice_details)
+
+	print("-" * 150, entry_detail)
+
+	print("*" * 120, "1")
+	for d in data:
+		print(d)
+		print()
 
 	if entry_detail:
 		for e in entry_detail:
@@ -157,9 +193,26 @@ def update_wbs_storage_location(data, filters):
 								'wbs_storage_location': e.get('target_warehouse_storage_location'),
 								'wbs_id': id
 							})
+					# bmga yuvabe
+					if warehouse == e.get('warehouse') and d.get('item_code') == e.get('item_code'):
+						id = get_id(e.get('warehouse_storage_location'))
+						if id:
+							d.update({
+								'wbs_storage_location': e.get('warehouse_storage_location'),
+								'wbs_id': id
+							})
+	print("*" * 120, "2")
+	for d in data:
+		print(d)
+		print()
 	for d in data:
 		if d.get('voucher_no') and d.get('wbs_storage_location') and d.get('wbs_id'):
 			rpt.append(d);
+	
+	print("*" * 120, "3")
+	for d in rpt:
+		print(d)
+		print()
 
 	return rpt
 
@@ -233,7 +286,7 @@ def get_stock_ledger_entries(filters, items):
 
 	conditions = get_conditions(filters)
 
-	return frappe.db.sql("""
+	stock_data =  frappe.db.sql("""
 		select
 			sle.item_code, sle.warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference,
@@ -243,6 +296,8 @@ def get_stock_ledger_entries(filters, items):
 		where sle.docstatus < 2 %s %s
 		order by sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty""" % #nosec
 		(item_conditions_sql, conditions), as_dict=1)
+	
+	return stock_data
 
 def get_item_warehouse_map(filters, sle):
 	iwb_map = {}

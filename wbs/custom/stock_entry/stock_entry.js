@@ -30,7 +30,9 @@ frappe.ui.form.on("Stock Entry Detail", {
     if (frm.doc.stock_entry_type === 'Material Transfer' || frm.doc.stock_entry_type === 'Material Receipt') {
 
       if (doc.t_warehouse) {
+        console.log(t_warehouse)
         let t_wbs = is_wbs(doc.t_warehouse)
+        console.log(t_wbs)
 
         if (t_wbs) {
           var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['target_warehouse_storage_location'].$wrapper
@@ -110,18 +112,18 @@ frappe.ui.form.on("Stock Entry Detail", {
   item_code: (frm, cdt, cdn) => {
     var doc = locals[cdt][cdn]
 
-    // if (!doc.item_code) {
-    //
-    //   if (doc.source_warehouse_storage_location) {
-    //     doc.source_warehouse_storage_location = ''
-    //     cur_frm.refresh_field('source_warehouse_storage_location')
-    //   }
-    //
-    //   if (doc.target_warehouse_storage_location) {
-    //     doc.target_warehouse_storage_location = ''
-    //     cur_frm.refresh_field('target_warehouse_storage_location')
-    //   }
-    // }
+    if (!doc.item_code) {
+    
+      if (doc.source_warehouse_storage_location) {
+        doc.source_warehouse_storage_location = ''
+        cur_frm.refresh_field('source_warehouse_storage_location')
+      }
+    
+      if (doc.target_warehouse_storage_location) {
+        doc.target_warehouse_storage_location = ''
+        cur_frm.refresh_field('target_warehouse_storage_location')
+      }
+    }
 
     if (frm.doc.stock_entry_type === 'Material Issue') {
 
@@ -148,18 +150,22 @@ frappe.ui.form.on("Stock Entry Detail", {
     } else if (frm.doc.stock_entry_type === 'Material Receipt') {
       if (doc.t_warehouse && doc.item_code) {
         let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+        console.log("get nearest loc with item Material Receipt", t_loc)
 
         if(t_loc) {
           doc.target_warehouse_storage_location = t_loc
           let id = get_strg_id(t_loc)
+          console.log("get nearest loc with item id", id)
           doc.target_storage_location_id = id ? id : '';
           frm.refresh_field('items')
         }  else {
           let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+          console.log("material receipt previous", previous);
 
           if (previous) {
             doc.target_warehouse_storage_location = previous.strg_loc;
             let id = get_strg_id(previous.strg_loc)
+            console.log("material receipt previous id", id);
             doc.target_storage_location_id = id ? id : '';
             frm.refresh_field('items')
           }
@@ -259,10 +265,12 @@ frappe.ui.form.on("Stock Entry Detail", {
           }
         } else if (s_wbs) {
           let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+          console.log("material transfer s_wbs s_loc", s_loc)
 
           if (s_loc) {
             doc.source_warehouse_storage_location = s_loc
             let id = get_strg_id(s_loc)
+            console.log("material transfer s_wbs s_loc id", id)
             doc.source_storage_location_id = id ? id : '';
             frm.refresh_field('items')
           }  else {
