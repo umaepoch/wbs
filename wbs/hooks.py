@@ -29,7 +29,8 @@ app_license = "MIT"
 doctype_js = {
     "Stock Entry" : "custom/stock_entry/stock_entry.js",
     "Warehouse" : "custom/warehouse/warehouse.js",
-    "Sales Invoice": "custom/sales_invoice/sales_invoice.js"
+    "Sales Invoice": "custom/sales_invoice/sales_invoice.js",
+    "Purchase Receipt": "custom/purchase_receipt/purchase_receipt.js",
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
