@@ -2,6 +2,154 @@
 // For license information, please see license.txt
 
 // display link fields based on warehouse.
+frappe.ui.form.on("Stock Entry", {
+  setup: function(frm) {
+    frm.update_wbs_location = function(frm) {
+      let items = frm.doc.items;
+      if(items.length > 0) {
+        $.each(items, function(_i, doc) {
+          if ((doc.s_warehouse && doc.item_code) || (doc.t_warehouse && doc.item_code)) {
+            let s_wbs;
+            let t_wbs;
+    
+            if (doc.s_warehouse) {
+              s_wbs = is_wbs(doc.s_warehouse)
+            } else {
+              s_wbs = ''
+            }
+    
+            if (doc.t_warehouse) {
+              t_wbs = is_wbs(doc.t_warehouse)
+            } else {
+              t_wbs = ''
+    
+            }
+    
+            if (s_wbs && t_wbs) {
+              let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+              let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+    
+              if (s_loc && t_loc) {
+    
+                if (s_loc) {
+                  doc.source_warehouse_storage_location = s_loc
+                  let id = get_strg_id(s_loc)
+                  doc.source_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+    
+                  if (t_loc) {
+                    doc.target_warehouse_storage_location = t_loc
+                    let id2 = get_strg_id(t_loc)
+                    doc.target_storage_location_id = id2 ? id2 : '';
+                    frm.refresh_field('items')
+                  }
+                }
+    
+    
+              } else if (s_loc && !t_loc) {
+                doc.source_warehouse_storage_location = s_loc
+                let id = get_strg_id(s_loc)
+                doc.source_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+    
+                if (!t_loc) {
+                  let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+    
+                  if (previous) {
+                    doc.target_warehouse_storage_location = previous.strg_loc;
+                    let id = get_strg_id(previous.strg_loc)
+                    doc.target_storage_location_id = id ? id : '';
+                    frm.refresh_field('items')
+                  }
+                }
+              } else if (t_loc && !s_loc) {
+                doc.target_warehouse_storage_location = t_loc
+                let id = get_strg_id(t_loc)
+                doc.target_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+    
+                if (!s_loc) {
+                  let previous = get_previous_transaction("SOURCE",frm.doc.posting_date, doc.s_warehouse, doc.item_code)
+    
+    
+                  if (previous) {
+                    doc.source_warehouse_storage_location = previous.strg_loc;
+                    let id = get_strg_id(previous.strg_loc)
+                    doc.source_storage_location_id = id ? id : '';
+                    frm.refresh_field('items')
+                  }
+                }
+              } else if (!t_loc && !s_loc) {
+                let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+                console.log(previous)
+                if (previous) {
+                  doc.target_warehouse_storage_location = previous.strg_loc;
+                  let id = get_strg_id(previous.strg_loc)
+                  doc.target_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+                }
+    
+                let sprevious = get_previous_transaction("SOURCE",frm.doc.posting_date, doc.s_warehouse, doc.item_code)
+                console.log(sprevious)
+                if (sprevious) {
+                  doc.source_warehouse_storage_location = sprevious.strg_loc;
+                  let id = get_strg_id(sprevious.strg_loc)
+                  doc.source_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+                }
+              }
+            } else if (s_wbs) {
+              let s_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.s_warehouse)
+              console.log("material transfer s_wbs s_loc", s_loc)
+    
+              if (s_loc) {
+                doc.source_warehouse_storage_location = s_loc
+                let id = get_strg_id(s_loc)
+                console.log("material transfer s_wbs s_loc id", id)
+                doc.source_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+              }  else {
+                let previous = get_previous_transaction("SOURCE",frm.doc.posting_date, doc.s_warehouse, doc.item_code)
+    
+                if (previous) {
+                  doc.source_warehouse_storage_location = previous.strg_loc;
+                  let id = get_strg_id(previous.strg_loc)
+                  doc.source_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+                }
+              }
+            } else if (t_wbs) {
+              let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+    
+              if(t_loc) {
+                doc.target_warehouse_storage_location = t_loc
+                let id = get_strg_id(t_loc)
+                doc.target_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+              }  else {
+                let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+    
+                if (previous) {
+                  doc.target_warehouse_storage_location = previous.strg_loc;
+                  let id = get_strg_id(previous.strg_loc)
+                  doc.target_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+                }
+              }
+            }
+          }
+        })
+      }
+    }
+  },
+
+  refresh: function(frm) {
+    if (frm.doc.stock_entry_type === 'Material Transfer') {
+      frm.update_wbs_location(frm);
+    }
+  }
+});
+
 frappe.ui.form.on("Stock Entry Detail", {
   form_render: (frm, cdt, cdn) => {
     let doc = locals[cdt][cdn]
