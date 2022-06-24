@@ -4,7 +4,40 @@
 // display link fields based on warehouse.
 frappe.ui.form.on("Stock Entry", {
   setup: function(frm) {
-    frm.update_wbs_location = function(frm) {
+    frm.update_wbs_location_receipt = function(frm) {
+      let items = frm.doc.items;
+      if(items.length > 0) {
+        $.each(items, function(_i, doc) {
+          if (frm.doc.stock_entry_type === 'Material Receipt') {
+            if (doc.t_warehouse && doc.item_code) {
+              let t_loc = get_nearest_loc_with_item(frm.doc.posting_date, doc.item_code, doc.t_warehouse)
+              console.log("get nearest loc with item Material Receipt", t_loc)
+      
+              if(t_loc) {
+                doc.target_warehouse_storage_location = t_loc
+                let id = get_strg_id(t_loc)
+                console.log("get nearest loc with item id", id)
+                doc.target_storage_location_id = id ? id : '';
+                frm.refresh_field('items')
+              }  else {
+                let previous = get_previous_transaction("TARGET",frm.doc.posting_date, doc.t_warehouse, doc.item_code)
+                console.log("material receipt previous", previous);
+      
+                if (previous) {
+                  doc.target_warehouse_storage_location = previous.strg_loc;
+                  let id = get_strg_id(previous.strg_loc)
+                  console.log("material receipt previous id", id);
+                  doc.target_storage_location_id = id ? id : '';
+                  frm.refresh_field('items')
+                }
+              }
+            }
+          }
+        })
+      }
+    }
+
+    frm.update_wbs_location_transfer = function(frm) {
       let items = frm.doc.items;
       if(items.length > 0) {
         $.each(items, function(_i, doc) {
@@ -145,7 +178,9 @@ frappe.ui.form.on("Stock Entry", {
 
   refresh: function(frm) {
     if (frm.doc.stock_entry_type === 'Material Transfer') {
-      frm.update_wbs_location(frm);
+      frm.update_wbs_location_transfer(frm);
+    } else if (frm.doc.stock_entry_type === 'Material Receipt') {
+      frm.update_wbs_location_receipt(frm);
     }
   }
 });
