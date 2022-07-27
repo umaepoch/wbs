@@ -29,13 +29,13 @@ frappe.ui.form.on("Sales Invoice Item", {
                     console.log("hide 1");
                     refresh_field("items");
                 }
-            } else {
+            } /* else {
                 let doc = locals[cdt][cdn];
                 var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['warehouse_storage_location'].$wrapper;
                 wrapper.hide();
                 console.log("hide 2");
                 refresh_field("items");
-            }
+            } */
         } else {
             let doc = locals[cdt][cdn];
             var wrapper = frm.fields_dict[doc.parentfield].grid.grid_rows_by_docname[cdn].grid_form.fields_dict['warehouse_storage_location'].$wrapper;
