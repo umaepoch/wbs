@@ -45,6 +45,24 @@ frappe.ui.form.on("Purchase Receipt Item", {
         }
     },
 
+    pch_ptr: function(frm, cdt, cdn) {
+      let doc = locals[cdt][cdn];
+
+      if(doc.pch_pts > doc.pch_ptr * 0.93) {
+        doc.pch_pts = doc.pch_ptr * 0.93;
+        refresh_field("items");
+      }
+    },    
+
+    pch_pts: function(frm, cdt, cdn) {
+      let doc = locals[cdt][cdn];
+
+      if(doc.pch_ptr < doc.pch_pts * 1.07) {
+        doc.pch_ptr = doc.pch_pts * 1.07;
+        refresh_field("items");
+      }
+    },
+
     warehouse: function(frm, cdt, cdn) {
         let doc = locals[cdt][cdn];
 
