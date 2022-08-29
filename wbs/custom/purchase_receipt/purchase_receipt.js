@@ -49,8 +49,7 @@ frappe.ui.form.on("Purchase Receipt Item", {
       let doc = locals[cdt][cdn];
 
       if(doc.pch_pts > doc.pch_ptr * 0.93) {
-        doc.pch_pts = doc.pch_ptr * 0.93;
-        refresh_field("items");
+        frappe.msg_print(`PTR is not 7% greater then PTS`);
       }
     },    
 
@@ -58,8 +57,7 @@ frappe.ui.form.on("Purchase Receipt Item", {
       let doc = locals[cdt][cdn];
 
       if(doc.pch_ptr < doc.pch_pts * 1.07) {
-        doc.pch_ptr = doc.pch_pts * 1.07;
-        refresh_field("items");
+        frappe.msg_print(`PTS is not 7% less then PTR`);
       }
     },
 
